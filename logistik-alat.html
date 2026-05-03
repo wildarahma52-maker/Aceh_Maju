@@ -1,0 +1,1458 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Logistik & Alat - RoadFix Gle Ghapui Sector</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    
+    <style>
+        :root {
+            --ease-in-out: cubic-bezier(0.25, 0.46, 0.45, 0.94);
+            --ease-out: cubic-bezier(0, 0, 0.2, 1);
+        }
+
+        @media print {
+            nav, button, #toastContainer, .modal { display: none !important; }
+            body { background-color: #ffffff !important; color: #000000 !important; }
+            .card { background-color: #ffffff !important; border: 1px solid #ccc !important; box-shadow: none !important; }
+            main { padding: 0 !important; }
+        }
+
+        * { box-sizing: border-box; }
+        body { 
+            background: linear-gradient(135deg, #0f111a 0%, #1a1a2e 100%);
+            color: #e2e8f0; 
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            line-height: 1.6;
+            margin: 0;
+            min-height: 100vh;
+            opacity: 0;
+            transform: translateY(20px);
+            transition: all 0.8s var(--ease-out);
+        }
+        body.loaded { opacity: 1; transform: translateY(0); }
+        
+        /* Navbar Styles */
+        .navbar {
+            background: rgba(22, 27, 34, 0.95);
+            backdrop-filter: blur(20px);
+            border-bottom: 1px solid #30363d;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            padding: 0.5rem 1rem;
+        }
+        
+        .nav-container {
+            max-width: 1400px;
+            margin: 0 auto;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .nav-brand {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            font-weight: 800;
+            font-size: 1.25rem;
+            color: #58a6ff;
+            text-decoration: none;
+        }
+        
+        .nav-brand i { font-size: 1.5rem; }
+        
+        .nav-menu {
+            display: flex;
+            list-style: none;
+            margin: 0;
+            padding: 0;
+            gap: 0.25rem;
+        }
+        
+        .nav-item a {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.75rem 1rem;
+            color: #94a3b8;
+            text-decoration: none;
+            border-radius: 0.75rem;
+            font-weight: 500;
+            font-size: 0.875rem;
+            transition: all 0.3s var(--ease-out);
+            white-space: nowrap;
+        }
+        
+        .nav-item a:hover, .nav-item a.active {
+            background: rgba(88, 166, 255, 0.15);
+            color: #58a6ff;
+            transform: translateY(-1px);
+        }
+        
+        .nav-user {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            padding: 0.5rem 1rem;
+            background: rgba(88, 166, 255, 0.1);
+            border: 1px solid rgba(88, 166, 255, 0.2);
+            border-radius: 1rem;
+            font-weight: 600;
+            font-size: 0.875rem;
+        }
+        
+        .hamburger {
+            display: none;
+            flex-direction: column;
+            gap: 4px;
+            cursor: pointer;
+            padding: 0.5rem;
+        }
+        
+        .hamburger span {
+            width: 24px;
+            height: 3px;
+            background: #e2e8f0;
+            border-radius: 3px;
+            transition: all 0.3s ease;
+        }
+        
+        /* Main Content */
+        .main-container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 2rem 1rem;
+        }
+        
+        /* Header Section */
+        .header-section {
+            text-align: center;
+            margin-bottom: 3rem;
+        }
+        
+        .header-title {
+            font-size: clamp(1.75rem, 5vw, 3rem);
+            font-weight: 900;
+            background: linear-gradient(135deg, #58a6ff, #3b82f6, #8b5cf6);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin-bottom: 1rem;
+            line-height: 1.2;
+        }
+        
+        .header-tags {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 0.5rem;
+            margin-top: 1rem;
+        }
+        
+        .tag {
+            background: rgba(88, 166, 255, 0.15);
+            color: #58a6ff;
+            padding: 0.375rem 0.75rem;
+            border-radius: 9999px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            border: 1px solid rgba(88, 166, 255, 0.3);
+            animation: bounce 2s infinite;
+        }
+        
+        .tag:nth-child(2) { animation-delay: 0.2s; }
+        .tag:nth-child(3) { animation-delay: 0.4s; }
+        
+        @keyframes bounce {
+            0%, 20%, 50%, 80%, 100% { transform: translateY(0); }
+            40% { transform: translateY(-10px); }
+            60% { transform: translateY(-5px); }
+        }
+        
+        /* Stats Grid */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 3rem;
+        }
+        
+        .stat-card {
+            background: rgba(28, 33, 40, 0.8);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(48, 54, 61, 0.5);
+            border-radius: 1.5rem;
+            padding: 2rem;
+            transition: all 0.4s var(--ease-out);
+            position: relative;
+            overflow: hidden;
+            transform: translateY(30px);
+            opacity: 0;
+        }
+        
+        .stat-card.animate {
+            transform: translateY(0);
+            opacity: 1;
+        }
+        
+        .stat-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.1), transparent);
+            transition: left 0.6s;
+        }
+        
+        .stat-card:hover::before { left: 100%; }
+        .stat-card:hover {
+            transform: translateY(-8px);
+            box-shadow: 0 25px 50px -12px rgba(0,0,0,0.4);
+            border-color: rgba(88, 166, 255, 0.3);
+        }
+        
+        .stat-icon { 
+            font-size: 2rem; 
+            margin-bottom: 1rem;
+            transition: all 0.5s var(--ease-out);
+        }
+        
+        .stat-card:hover .stat-icon {
+            transform: rotate(12deg) scale(1.1);
+        }
+        
+        .stat-number { 
+            font-size: 2.5rem; 
+            font-weight: 900; 
+            margin-bottom: 0.5rem; 
+        }
+        
+        /* Equipment Cards Grid */
+        .equipment-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 3rem;
+        }
+        
+        .equipment-card {
+            background: rgba(28, 33, 40, 0.8);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(48, 54, 61, 0.5);
+            border-radius: 1.5rem;
+            padding: 2rem;
+            transition: all 0.4s var(--ease-out);
+            cursor: pointer;
+            position: relative;
+            overflow: hidden;
+            transform: translateY(30px);
+            opacity: 0;
+        }
+        
+        .equipment-card.animate {
+            transform: translateY(0);
+            opacity: 1;
+        }
+        
+        .equipment-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.1), transparent);
+            transition: left 0.6s;
+        }
+        
+        .equipment-card:hover::before { left: 100%; }
+        .equipment-card:hover {
+            transform: translateY(-8px);
+            box-shadow: 0 25px 50px -12px rgba(0,0,0,0.4);
+            border-color: rgba(88, 166, 255, 0.3);
+        }
+        
+        /* Status badges */
+        .status-badge {
+            padding: 0.375rem 0.75rem;
+            border-radius: 9999px;
+            font-size: 0.75rem;
+            font-weight: 700;
+            text-transform: uppercase;
+        }
+        
+        .status-available { background: rgba(46, 160, 67, 0.2); color: #3fb950; border: 1px solid rgba(63, 185, 80, 0.3); }
+        .status-booking { background: rgba(59, 130, 246, 0.2); color: #58a6ff; border: 1px solid rgba(88, 166, 255, 0.3); }
+        .status-maintenance { background: rgba(189, 147, 249, 0.2); color: #bd93f9; border: 1px solid rgba(189, 147, 249, 0.3); }
+        .status-broken { background: rgba(239, 68, 68, 0.2); color: #f87171; border: 1px solid rgba(239, 68, 68, 0.3); }
+        
+        /* Progress bar */
+        .progress-bar {
+            width: 100%;
+            height: 8px;
+            background: rgba(48, 54, 61, 0.7);
+            border-radius: 4px;
+            overflow: hidden;
+            margin: 1rem 0;
+        }
+        
+        .progress-fill {
+            height: 100%;
+            transition: width 0.6s ease-out;
+            border-radius: 4px;
+            transform: scaleX(0);
+            transform-origin: left;
+        }
+        
+        .progress-fill.animate { transform: scaleX(1); }
+        
+        /* Action Buttons */
+        .btn {
+            padding: 0.75rem 1.5rem;
+            border: none;
+            border-radius: 0.75rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s var(--ease-out);
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-size: 0.875rem;
+            text-decoration: none;
+        }
+        
+        .btn-primary {
+            background: linear-gradient(135deg, #58a6ff, #3b82f6);
+            color: white;
+            box-shadow: 0 4px 15px rgba(88, 166, 255, 0.3);
+        }
+        
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(88, 166, 255, 0.4);
+        }
+        
+        .btn-secondary {
+            background: transparent;
+            color: #94a3b8;
+            border: 1px solid rgba(148, 163, 184, 0.3);
+        }
+        
+        .btn-secondary:hover {
+            background: rgba(88, 166, 255, 0.1);
+            color: #58a6ff;
+            border-color: rgba(88, 166, 255, 0.3);
+        }
+        
+        /* Flex utilities for buttons */
+        .flex { display: flex; }
+        .flex-wrap { flex-wrap: wrap; }
+        .gap-3 { gap: 0.75rem; }
+        .justify-center { justify-content: center; }
+        .mb-8 { margin-bottom: 2rem; }
+        
+        /* Quick Actions */
+        .actions-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 1.5rem;
+            margin-top: 3rem;
+        }
+        
+        .action-card {
+            background: rgba(28, 33, 40, 0.8);
+            border: 1px solid rgba(48, 54, 61, 0.5);
+            border-radius: 1.5rem;
+            padding: 2rem 1.5rem;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.4s var(--ease-out);
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .action-card::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background: linear-gradient(135deg, transparent 0%, rgba(88,166,255,0.05) 50%, transparent 100%);
+            opacity: 0;
+            transition: opacity 0.4s ease;
+        }
+        
+        .action-card:hover::before { opacity: 1; }
+        .action-card:hover {
+            transform: translateY(-8px);
+            box-shadow: 0 20px 40px -10px rgba(0,0,0,0.4);
+            border-color: rgba(88, 166, 255, 0.3);
+        }
+        
+        .action-icon {
+            width: 64px;
+            height: 64px;
+            border-radius: 1rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.75rem;
+            color: white;
+            margin: 0 auto 1.5rem;
+            transition: all 0.5s var(--ease-out);
+        }
+        
+        .action-card:hover .action-icon {
+            transform: scale(1.1) rotate(5deg);
+        }
+        
+        /* HIDDEN FORMS */
+       /* Tambahkan atau ubah kode ini di bagian <style> */
+.hidden-forms .bg-gradient-to-r {
+    max-width: 1000px; /* Ukuran maksimal panel form */
+    margin-left: auto;
+    margin-right: auto;
+    padding: 1.5rem; /* Mengurangi padding dalam agar lebih ramping */
+}
+
+/* Mengatur ukuran form input agar lebih pendek jika diperlukan */
+.hidden-forms .form-control {
+    padding: 0.75rem; /* Mengecilkan tinggi input */
+    font-size: 0.875rem;
+}
+        
+        
+        @keyframes slideDown {
+            from { opacity: 0; transform: translateY(-20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        /* Modal Styles */
+        .modal {
+            position: fixed;
+            inset: 0;
+            background: rgba(0,0,0,0.8);
+            backdrop-filter: blur(20px);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 1rem;
+            opacity: 0;
+            visibility: hidden;
+            transition: all 0.4s var(--ease-out);
+            z-index: 1000;
+        }
+        
+        .modal.show {
+            opacity: 1;
+            visibility: visible;
+        }
+        
+        .modal-content {
+            background: rgba(28, 33, 40, 0.95);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(48, 54, 61, 0.5);
+            border-radius: 1.5rem;
+            max-width: 800px;
+            max-height: 90vh;
+            overflow-y: auto;
+            width: 100%;
+            transform: scale(0.8) translateY(20px);
+            transition: all 0.4s var(--ease-out);
+        }
+        
+        .modal.show .modal-content {
+            transform: scale(1) translateY(0);
+        }
+        
+        .modal-header {
+            padding: 2rem 2rem 1.5rem;
+            border-bottom: 1px solid rgba(48, 54, 61, 0.5);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .modal-title {
+            font-size: 1.5rem;
+            font-weight: 800;
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+        
+        .modal-close {
+            background: none;
+            border: none;
+            font-size: 1.5rem;
+            color: #94a3b8;
+            cursor: pointer;
+            padding: 0.5rem;
+            border-radius: 0.5rem;
+            transition: all 0.3s ease;
+            width: 40px;
+            height: 40px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .modal-close:hover {
+            background: rgba(148, 163, 184, 0.2);
+            color: #e2e8f0;
+            transform: scale(1.2);
+        }
+        
+        .form-group {
+            margin-bottom: 1.5rem;
+        }
+        
+        .form-label {
+            display: block;
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+            font-size: 0.875rem;
+            color: #e2e8f0;
+        }
+        
+        .form-control {
+            width: 100%;
+            padding: 1rem;
+            background: rgba(42, 42, 62, 0.8);
+            border: 1px solid rgba(64, 64, 94, 0.6);
+            border-radius: 0.75rem;
+            color: #e2e8f0;
+            font-size: 1rem;
+            transition: all 0.3s var(--ease-out);
+            transform: translateY(4px);
+        }
+        
+        .form-control:focus {
+            outline: none;
+            border-color: #58a6ff;
+            box-shadow: 0 0 0 3px rgba(88, 166, 255, 0.1);
+            background: rgba(45, 45, 68, 0.9);
+            transform: translateY(-1px);
+        }
+        
+        .form-row {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 1rem;
+        }
+        
+        .form-section {
+            background: rgba(42, 42, 62, 0.5);
+            border: 1px solid rgba(64, 64, 94, 0.4);
+            border-radius: 1rem;
+            padding: 2rem;
+            margin-bottom: 2rem;
+        }
+        
+        .modal-actions {
+            padding: 1.5rem 2rem 2rem;
+            border-top: 1px solid rgba(48, 54, 61, 0.5);
+            display: flex;
+            gap: 1rem;
+            justify-content: flex-end;
+        }
+        
+        /* Toast */
+        #toastContainer {
+            position: fixed;
+            bottom: 1.5rem;
+            right: 1.5rem;
+            z-index: 2000;
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+        }
+        
+        .toast {
+            padding: 1rem 1.5rem;
+            border-radius: 1rem;
+            font-weight: 600;
+            max-width: 350px;
+            transform: translateX(400px);
+            transition: all 0.4s var(--ease-out);
+            border: 1px solid;
+        }
+        
+        .toast.show { transform: translateX(0); }
+        
+        /* Text utilities */
+        .text-red-400 { color: #f87171; }
+        .text-blue-400 { color: #60a5fa; }
+        .text-green-400 { color: #4ade80; }
+        .text-purple-400 { color: #a78bfa; }
+        .text-orange-400 { color: #fb923c; }
+        
+        /* Responsive */
+        @media (max-width: 768px) {
+            .hamburger { display: flex; }
+            .nav-menu {
+                position: fixed;
+                top: 100%;
+                left: 0;
+                right: 0;
+                background: rgba(22, 27, 34, 0.98);
+                backdrop-filter: blur(20px);
+                flex-direction: column;
+                padding: 1rem;
+                border-top: 1px solid rgba(48, 54, 61, 0.5);
+                max-height: 0;
+                overflow: hidden;
+                transition: all 0.4s ease;
+            }
+            
+            .nav-menu.open { max-height: 500px; }
+            
+            .main-container { padding: 1rem 0.5rem; }
+            .stats-grid, .equipment-grid, .actions-grid { grid-template-columns: 1fr; }
+            .form-row { grid-template-columns: 1fr; }
+        }
+        
+        @media (max-width: 480px) {
+            .main-container { padding: 1rem 0.25rem; }
+            .header-title { font-size: 1.75rem; }
+            .stat-card, .action-card, .equipment-card { padding: 1.5rem 1rem; }
+        }
+
+        /* Pengaturan khusus layar HP (Maksimal 768px) */
+        @media (max-width: 768px) {
+            .hamburger { 
+                display: flex; /* Munculkan tombol garis tiga */
+            }
+
+            .nav-user {
+                display: none; /* Sembunyikan profil user agar tidak sempit */
+            }
+
+            .nav-menu {
+                position: fixed;
+                top: 60px; /* Jarak dari atas (sesuaikan tinggi navbar) */
+                left: -100%; /* Sembunyikan menu di luar layar kiri */
+                flex-direction: column;
+                background: rgba(22, 27, 34, 0.98);
+                width: 100%;
+                height: calc(100vh - 60px);
+                transition: 0.3s;
+                gap: 0;
+                padding: 1rem;
+                z-index: 99;
+            }
+
+            /* Saat menu dibuka (class 'open' ditambah lewat JS) */
+            .nav-menu.open {
+                left: 0;
+            }
+
+            .nav-item {
+                width: 100%;
+                border-bottom: 1px solid rgba(255,255,255,0.1);
+            }
+
+            .nav-item a {
+                padding: 1.5rem;
+                width: 100%;
+                justify-content: flex-start;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Navbar - IDENTIK DENGAN DASHBOARD & TITIK PROYEK -->
+    <nav class="navbar">
+        <div class="nav-container">
+            <a href="index.html" class="nav-brand">
+                <i class="fas fa-truck"></i>
+               <span>RoadFix<span class="text-blue-400">Pro</span></span>
+            </a>
+            
+            <ul class="nav-menu" id="navMenu">
+                <li class="nav-item">
+                    <a href="index.html">
+                        <i class="fas fa-chart-bar"></i>
+                        Dashboard
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="titik-proyek.html">
+                        <i class="fas fa-map-marked-alt"></i>
+                        Titik Proyek
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="logistik-alat.html" class="active">
+                        <i class="fas fa-truck-pickup"></i>
+                        Logistik
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="tim-lapangan.html">
+                        <i class="fas fa-users"></i>
+                        Tim Lapangan
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="analitik.html">
+                        <i class="fas fa-chart-line"></i>
+                        Analitik
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="settings.html">
+                        <i class="fas fa-cog"></i>
+                        Settings
+                    </a>
+                </li>
+            </ul>
+            
+            <div class="nav-user">
+                <div class="w-8 h-8 bg-gradient-to-r from-blue-500 to-blue-600 rounded-full flex items-center justify-center text-white font-bold text-sm">WZ</div>
+                <span>Logistik Manager</span>
+            </div>
+            
+            <div class="hamburger" id="hamburger">
+                <span></span>
+                <span></span>
+                <span></span>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <div class="main-container">
+        <!-- Header -->
+        <div class="header-section">
+            <h1 class="header-title">Manajemen Logistik & Alat Berat</h1>
+            <div class="header-tags">
+                <span class="tag">Sektor Gle Ghapui</span>
+                <span class="tag">28 Unit Alat</span>
+                <span class="tag">89% Ketersediaan</span>
+                <span class="tag">Update: 15 Jan 2025</span>
+            </div>
+        </div>
+
+        <!-- Action Buttons -->
+        <div class="flex flex-wrap gap-3 justify-center mb-8">
+            <button onclick="toggleHiddenForms()" class="btn btn-secondary">
+                <i class="fas fa-eye"></i> Hidden Forms
+            </button>
+            <button onclick="exportData()" class="btn btn-secondary">
+                <i class="fas fa-download"></i> Export CSV
+            </button>
+            <button onclick="prosesCetak()" class="btn btn-secondary">
+                <i class="fas fa-print"></i> Cetak Laporan
+            </button>
+            <button onclick="toggleModal('addEquipmentModal')" class="btn btn-primary">
+                <i class="fas fa-plus"></i> Tambah Alat
+            </button>
+        </div>
+
+        <!-- Stats -->
+        <div class="stats-grid">
+            <div class="stat-card">
+                <div class="stat-icon text-orange-400"><i class="fas fa-hard-hat"></i></div>
+                <div class="stat-number text-orange-400" id="totalEquipment">28</div>
+                <div class="text-sm text-gray-400 uppercase tracking-wide font-medium">Total Alat</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon text-green-400"><i class="fas fa-check-circle"></i></div>
+                <div class="stat-number text-green-400" id="availability">89%</div>
+                <div class="text-sm text-gray-400 uppercase tracking-wide font-medium">Ketersediaan</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon text-blue-400"><i class="fas fa-tachometer-alt"></i></div>
+                <div class="stat-number text-blue-400" id="totalHours">1,247</div>
+                <div class="text-sm text-gray-400 uppercase tracking-wide font-medium">Jam Operasi</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon text-yellow-400"><i class="fas fa-tools"></i></div>
+                <div class="stat-number text-yellow-400">Rp 187M</div>
+                <div class="text-sm text-gray-400 uppercase tracking-wide font-medium">Biaya Perawatan</div>
+            </div>
+        </div>
+
+        <!-- Equipment Cards Grid -->
+        <div class="equipment-grid" id="equipmentGrid">
+            <!-- Equipment cards akan dirender oleh JavaScript -->
+        </div>
+
+        <!-- HIDDEN FORMS SECTION -->
+        <div id="hiddenFormsSection" class="hidden-forms">
+          <div class="bg-gradient-to-r from-orange-500/10 to-orange-600/10 border-2 border-orange-500/20 rounded-2xl p-6 mb-8 max-w-5xl mx-auto"></div>
+                <div class="flex justify-between items-center mb-6">
+                    <h3 class="text-2xl font-bold text-orange-400 flex items-center gap-3">
+                        <i class="fas fa-eye-slash"></i>
+                        Hidden Forms Panel
+                    </h3>
+                    <button onclick="toggleHiddenForms()" class="btn btn-secondary">
+                        <i class="fas fa-times"></i> Sembunyikan
+                    </button>
+                </div>
+
+                <!-- Edit Equipment Form -->
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
+                    <div class="bg-gray-800/50 border border-gray-700/50 rounded-xl p-6">
+                        <h4 class="text-lg font-bold mb-4 text-orange-400 flex items-center gap-2">
+                            <i class="fas fa-edit"></i> Edit Equipment
+                        </h4>
+                        <form id="editEquipmentForm" class="space-y-4">
+                            <div class="form-group">
+                                <label class="form-label">ID Alat</label>
+                                <select name="editId" class="form-control" required>
+                                    <option value="">Pilih Alat</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">Status</label>
+                                <select name="editStatus" class="form-control" required>
+                                    <option value="available">Tersedia</option>
+                                    <option value="booking">Dipesan</option>
+                                    <option value="maintenance">Maintenance</option>
+                                    <option value="broken">Rusak</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">Catatan</label>
+                                <textarea name="editCatatan" rows="3" class="form-control"                            placeholder="Catatan perubahan status..."></textarea>
+                            </div>
+                            <button type="submit" class="w-full btn btn-primary">Update Status</button>
+                        </form>
+                    </div>
+
+                    <!-- Bulk Upload Form -->
+                    <div class="bg-gray-800/50 border border-gray-700/50 rounded-xl p-6">
+                        <h4 class="text-lg font-bold mb-4 text-emerald-400 flex items-center gap-2">
+                            <i class="fas fa-upload"></i> Bulk Upload CSV
+                        </h4>
+                        <form id="bulkUploadForm" class="space-y-4">
+                            <div class="form-group">
+                                <label class="form-label flex items-center gap-2">
+                                    <i class="fas fa-file-csv text-emerald-400"></i>
+                                    Upload File CSV
+                                </label>
+                                <input type="file" name="csvFile" accept=".csv" class="form-control" required>
+                            </div>
+                            <div class="bg-emerald-500/10 border border-emerald-500/20 p-3 rounded-lg text-sm">
+                                <p class="text-emerald-300">Format: id,jenis,status,lokasi,jam,servis</p>
+                            </div>
+                            <button type="submit" class="w-full btn bg-gradient-to-r from-emerald-500 to-emerald-600">Upload Data</button>
+                        </form>
+                    </div>
+                </div>
+
+                <!-- Report Form -->
+                <div class="bg-gray-800/50 border border-gray-700/50 rounded-xl p-6">
+                    <h4 class="text-lg font-bold mb-4 text-blue-400 flex items-center gap-2">
+                        <i class="fas fa-file-pdf"></i> Generate Report
+                    </h4>
+                    <form id="reportForm" class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                        <div class="form-group">
+                            <label class="form-label">Tipe Report</label>
+                            <select name="reportType" class="form-control" required>
+                                <option value="daily">Harian</option>
+                                <option value="weekly">Mingguan</option>
+                                <option value="monthly">Bulanan</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Status Filter</label>
+                            <select name="reportStatus" class="form-control">
+                                <option value="all">Semua Status</option>
+                                <option value="available">Tersedia</option>
+                                <option value="maintenance">Maintenance</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Tanggal</label>
+                            <input type="date" name="reportDate" class="form-control">
+                        </div>
+                        <button type="submit" class="md:col-span-3 w-full btn bg-gradient-to-r from-blue-500 to-blue-600">Generate PDF</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <!-- Quick Actions -->
+        <div class="actions-grid">
+            <div class="action-card" onclick="toggleModal('maintenanceModal')">
+                <div class="action-icon bg-gradient-to-r from-orange-500 to-orange-600">
+                    <i class="fas fa-wrench"></i>
+                </div>
+                <h4 class="font-bold text-xl mb-2">Jadwal Maintenance</h4>
+                <p class="text-gray-400 text-sm">Atur jadwal servis rutin alat</p>
+            </div>
+            <div class="action-card" onclick="toggleModal('fuelModal')">
+                <div class="action-icon bg-gradient-to-r from-emerald-500 to-emerald-600">
+                    <i class="fas fa-gas-pump"></i>
+                </div>
+                <h4 class="font-bold text-xl mb-2">Pemesanan BBM</h4>
+                <p class="text-gray-400 text-sm">Kelola kebutuhan bahan bakar</p>
+            </div>
+            <div class="action-card" onclick="toggleModal('routeModal')">
+                <div class="action-icon bg-gradient-to-r from-purple-500 to-purple-600">
+                    <i class="fas fa-route"></i>
+                </div>
+                <h4 class="font-bold text-xl mb-2">Rute Pengiriman</h4>
+                <p class="text-gray-400 text-sm">Optimasi rute logistik material</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODALS -->
+    <!-- Add Equipment Modal -->
+    <div id="addEquipmentModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 class="modal-title">
+                    <i class="fas fa-plus text-orange-400"></i>
+                    Tambah Peralatan Baru
+                </h3>
+                <button class="modal-close" onclick="toggleModal('addEquipmentModal')">&times;</button>
+            </div>
+            <form id="addEquipmentForm" class="p-6">
+                <div class="form-row">
+                    <div class="form-group">
+                        <label class="form-label">
+                            <i class="fas fa-hashtag text-orange-400"></i> ID Alat
+                        </label>
+                        <input type="text" name="id" class="form-control" placeholder="EX: EXCAV-001" required>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">
+                            <i class="fas fa-hard-hat text-emerald-400"></i> Jenis Alat
+                        </label>
+                        <select name="jenis" class="form-control" required>
+                            <option value="">Pilih Jenis</option>
+                            <option value="Excavator">Excavator</option>
+                            <option value="Dump Truck">Dump Truck</option>
+                            <option value="Wheel Loader">Wheel Loader</option>
+                            <option value="Bulldozer">Bulldozer</option>
+                            <option value="Road Roller">Road Roller</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">
+                        <i class="fas fa-map-marker-alt text-blue-400"></i> Lokasi Saat Ini
+                    </label>
+                    <input type="text" name="lokasi" class="form-control" placeholder="GG-001 / Stockyard Utama">
+                </div>
+                <div class="modal-actions">
+                    <button type="button" class="btn btn-secondary" onclick="toggleModal('addEquipmentModal')">Batal</button>
+                    <button type="submit" class="btn btn-primary">Simpan Alat</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Maintenance Modal -->
+    <div id="maintenanceModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 class="modal-title">
+                    <i class="fas fa-wrench text-orange-400"></i>
+                    Jadwal Maintenance
+                </h3>
+                <button class="modal-close" onclick="toggleModal('maintenanceModal')">&times;</button>
+            </div>
+            <form id="maintenanceForm" class="p-6">
+                <div class="form-row">
+                    <div class="form-group">
+                        <label class="form-label">
+                            <i class="fas fa-hashtag text-orange-400"></i> ID Alat
+                        </label>
+                        <select name="alat" id="maintenanceAlat" class="form-control" required>
+                            <option value="">Pilih Alat</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">
+                            <i class="fas fa-calendar text-emerald-400"></i> Tanggal Servis
+                        </label>
+                        <input type="date" name="tanggal" class="form-control">
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">
+                        <i class="fas fa-tools text-yellow-400"></i> Jenis Perawatan
+                    </label>
+                    <select name="jenisPerawatan" class="form-control">
+                        <option>Rutin Harian</option>
+                        <option>Servis Mingguan</option>
+                        <option>Big Service (500 Jam)</option>
+                        <option>Perbaikan Darurat</option>
+                    </select>
+                </div>
+                <div class="modal-actions">
+                    <button type="button" class="btn btn-secondary" onclick="toggleModal('maintenanceModal')">Batal</button>
+                    <button type="submit" class="btn btn-primary">Jadwalkan</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Fuel Modal -->
+    <div id="fuelModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 class="modal-title">
+                    <i class="fas fa-gas-pump text-emerald-400"></i>
+                    Pemesanan BBM
+                </h3>
+                <button class="modal-close" onclick="toggleModal('fuelModal')">&times;</button>
+            </div>
+            <form id="fuelForm" class="p-6">
+                <div class="form-row">
+                    <div class="form-group">
+                        <label class="form-label">
+                            <i class="fas fa-hashtag text-emerald-400"></i> ID Alat
+                        </label>
+                        <select name="alat" class="form-control" required>
+                            <option value="">Pilih Alat</option>
+                            <option>EXCAV-001</option>
+                            <option>DT-001</option>
+                            <option>WL-002</option>
+                            <option>BDZ-001</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">
+                            <i class="fas fa-gas-pump text-yellow-400"></i> Jenis BBM
+                        </label>
+                        <select name="jenisBBM" class="form-control" required>
+                            <option>Solar</option>
+                            <option>Dexlite</option>
+                            <option>Pertamina Dex</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">
+                        <i class="fas fa-tint text-blue-400"></i> Volume (Liter)
+                    </label>
+                    <input type="number" name="volume" class="form-control" placeholder="500" required>
+                </div>
+                <div class="modal-actions">
+                    <button type="button" class="btn btn-secondary" onclick="toggleModal('fuelModal')">Batal</button>
+                    <button type="submit" class="btn btn-primary">Kirim Pesanan</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Route Modal -->
+    <div id="routeModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 class="modal-title">
+                    <i class="fas fa-route text-purple-400"></i>
+                    Optimizer Rute Pengiriman
+                </h3>
+                <button class="modal-close" onclick="toggleModal('routeModal')">&times;</button>
+            </div>
+            <form id="routeForm" class="p-6">
+                <div class="form-row">
+                    <div class="form-group">
+                        <label class="form-label">
+                            <i class="fas fa-truck text-purple-400"></i> Jenis Kendaraan
+                        </label>
+                        <select name="kendaraan" class="form-control" required>
+                            <option value="">Pilih Kendaraan</option>
+                            <option value="Dump Truck 10M³">Dump Truck 10M³</option>
+                            <option value="Lowboy Trailer">Lowboy Trailer</option>
+                            <option value="Truk Mixer">Truk Mixer</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">
+                            <i class="fas fa-cubes text-orange-400"></i> Material
+                        </label>
+                        <select name="material" class="form-control" required>
+                            <option value="">Pilih Material</option>
+                            <option value="Aspal Hotmix">Aspal Hotmix</option>
+                            <option value="Agregat">Agregat</option>
+                            <option value="Pasir Urug">Pasir Urug</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">
+                        <i class="fas fa-map-marker-alt text-blue-400"></i> Titik Pengiriman
+                    </label>
+                    <input type="text" name="rute" class="form-control" placeholder="Stockyard → GG-001 → GG-002 → Stockyard">
+                </div>
+                <div class="modal-actions">
+                    <button type="button" class="btn btn-secondary" onclick="toggleModal('routeModal')">Batal</button>
+                    <button type="submit" class="btn btn-primary">Optimasi Rute</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Toast Container -->
+    <div id="toastContainer"></div>
+
+    <script>
+        // Data Storage - SEMUA DATA DIPERTAHANKAN
+        const equipmentData = [
+            { id: 'EXCAV-001', jenis: 'Excavator PC200', status: 'available', lokasi: 'GG-001', jam: 1247, servis: '10 Jan 2025', color: '#10b981' },
+            { id: 'DT-001', jenis: 'Dump Truck 10M³', status: 'booking', lokasi: 'GG-002', jam: 856, servis: '12 Jan 2025', color: '#3b82f6' },
+            { id: 'WL-002', jenis: 'Wheel Loader', status: 'maintenance', lokasi: 'Stockyard', jam: 987, servis: '08 Jan 2025', color: '#8b5cf6' },
+            { id: 'BDZ-001', jenis: 'Bulldozer D6R', status: 'available', lokasi: 'GG-003', jam: 654, servis: '14 Jan 2025', color: '#10b981' },
+            { id: 'RR-001', jenis: 'Road Roller 12T', status: 'available', lokasi: 'GG-001', jam: 432, servis: '15 Jan 2025', color: '#10b981' },
+            { id: 'EXCAV-002', jenis: 'Excavator PC120', status: 'broken', lokasi: 'Workshop', jam: 1567, servis: '05 Jan 2025', color: '#ef4444' }
+        ];
+
+        let maintenanceData = [];
+        let fuelOrders = [];
+        let routes = [];
+        let isFormsVisible = false;
+
+        // Initialize
+        window.addEventListener('load', () => {
+            document.body.classList.add('loaded');
+            setTimeout(() => {
+                document.querySelectorAll('.stat-card, .equipment-card').forEach((card, index) => {
+                    setTimeout(() => card.classList.add('animate'), index * 150);
+                });
+            }, 300);
+            initApp();
+            setupMobileMenu();
+        });
+
+        function initApp() {
+            renderEquipmentGrid();
+            populateSelects();
+            updateStats();
+        }
+
+        // Render Equipment Grid
+        function renderEquipmentGrid() {
+            const grid = document.getElementById('equipmentGrid');
+            grid.innerHTML = `
+                <div class="col-span-full">
+                    <h3 class="text-2xl font-bold text-white mb-6 flex items-center gap-3">
+                        <i class="fas fa-warehouse text-orange-400"></i>
+                        Inventaris Alat Berat (${equipmentData.length}) (Klik untuk Detail)
+                    </h3>
+                </div>
+                ${equipmentData.map(item => createEquipmentCard(item)).join('')}
+            `;
+        }
+
+        // Create Equipment Card
+        function createEquipmentCard(item) {
+            const statusText = {
+                available: 'Tersedia',
+                booking: 'Dipesan', 
+                maintenance: 'Maintenance',
+                broken: 'Rusak'
+            }[item.status];
+            const statusClass = `status-${item.status}`;
+
+            return `
+                <div class="equipment-card" onclick="viewEquipmentDetail('${item.id}')">
+                    <div class="flex justify-between items-start mb-4">
+                        <span class="font-mono font-bold text-orange-400 text-sm bg-orange-500/10 px-3 py-1 rounded-full">#${item.id}</span>
+                        <span class="status-badge ${statusClass}">${statusText}</span>
+                    </div>
+                    <h4 class="font-bold text-xl mb-3 hover:text-orange-400 transition-colors">${item.jenis}</h4>
+                    <p class="text-gray-400 text-sm mb-2 font-mono">${item.lokasi}</p>
+                    <p class="text-xs text-gray-500 mb-4">${item.servis}</p>
+                    <div class="progress-bar">
+                        <div class="progress-fill animate" style="background: linear-gradient(to right, ${item.color}, ${item.color}cc); width: ${item.jam > 1000 ? 90 : 60}%"></div>
+                    </div>
+                    <div class="flex gap-2 text-xs">
+                        <span class="text-gray-500">${item.jam} jam</span>
+                        <span class="ml-auto text-green-400 font-medium">${item.status}</span>
+                    </div>
+                </div>
+            `;
+        }
+
+        // Update Stats
+        function updateStats() {
+            document.getElementById('totalEquipment').textContent = equipmentData.length;
+            const availableCount = equipmentData.filter(item => item.status === 'available').length;
+            const availability = Math.round((availableCount / equipmentData.length) * 100);
+            document.getElementById('availability').textContent = availability + '%';
+            
+            const totalHours = equipmentData.reduce((sum, item) => sum + item.jam, 0);
+            document.getElementById('totalHours').textContent = totalHours.toLocaleString();
+        }
+
+        // Populate selects
+        function populateSelects() {
+            const maintenanceSelect = document.getElementById('maintenanceAlat');
+            const editSelect = document.querySelector('[name="editId"]');
+            
+            maintenanceSelect.innerHTML = '<option value="">Pilih Alat</option>';
+            editSelect.innerHTML = '<option value="">Pilih Alat</option>';
+            
+            equipmentData.forEach(item => {
+                maintenanceSelect.innerHTML += `<option value="${item.id}">${item.id} - ${item.jenis}</option>`;
+                editSelect.innerHTML += `<option value="${item.id}">${item.id} - ${item.jenis}</option>`;
+            });
+        }
+
+        // View Equipment Detail
+        function viewEquipmentDetail(id) {
+            const equipment = equipmentData.find(item => item.id === id);
+            if (equipment) {
+                Swal.fire({
+                    title: `Detail Alat #${equipment.id}`,
+                    html: `
+                        <div class="text-left p-4 text-sm space-y-3">
+                            <div class="grid grid-cols-2 gap-4">
+                                <div><strong>Jenis:</strong></div>
+                                <div class="font-bold text-white">${equipment.jenis}</div>
+                                <div><strong>Status:</strong></div>
+                                <div><span class="status-badge status-${equipment.status}">${equipment.status.toUpperCase()}</span></div>
+                                <div><strong>Lokasi:</strong></div>
+                                <div class="text-orange-400">${equipment.lokasi}</div>
+                                <div><strong>Jam Operasi:</strong></div>
+                                <div class="font-bold text-blue-400">${equipment.jam.toLocaleString()} jam</div>
+                                <div><strong>Terakhir Servis:</strong></div>
+                                <div>${equipment.servis}</div>
+                            </div>
+                        </div>
+                    `,
+                    icon: 'info',
+                    confirmButtonText: 'Tutup',
+                    confirmButtonColor: '#f97316',
+                    width: '500px'
+                });
+                
+                toggleHiddenForms();
+                showToast(`✏️ Edit ${equipment.id} - Gunakan Hidden Forms!`, 'info');
+            }
+        }
+
+        // Toggle Hidden Forms
+        function toggleHiddenForms() {
+            const formsSection = document.getElementById('hiddenFormsSection');
+            isFormsVisible = !isFormsVisible;
+            formsSection.classList.toggle('active');
+            
+            showToast(isFormsVisible ? '👁️ Hidden Forms dibuka!' : '🙈 Hidden Forms disembunyikan!', 'success');
+        }
+
+        // Modal Functions
+        function toggleModal(modalId) {
+            const modal = document.getElementById(modalId);
+            modal.classList.toggle('show');
+        }
+
+        // Form Handlers
+        document.getElementById('addEquipmentForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            const data = Object.fromEntries(new FormData(e.target));
+            
+            if (equipmentData.find(item => item.id === data.id)) {
+                showToast('❌ ID Alat sudah ada!', 'warning');
+                return;
+            }
+            
+            equipmentData.push({
+                id: data.id,
+                jenis: data.jenis,
+                status: 'available',
+                lokasi: data.lokasi || 'Stockyard',
+                jam: 0,
+                servis: new Date().toLocaleDateString('id-ID'),
+                color: '#10b981'
+            });
+            
+            renderEquipmentGrid();
+            populateSelects();
+            updateStats();
+            toggleModal('addEquipmentModal');
+            this.reset();
+            showToast('✅ Peralatan baru ditambahkan!', 'success');
+        });
+
+        document.getElementById('editEquipmentForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            const data = Object.fromEntries(new FormData(e.target));
+            const equipment = equipmentData.find(item => item.id === data.editId);
+            if (equipment) {
+                equipment.status = data.editStatus;
+                equipment.color = {
+                    available: '#10b981',
+                    booking: '#3b82f6',
+                    maintenance: '#8b5cf6',
+                    broken: '#ef4444'
+                }[data.editStatus];
+                renderEquipmentGrid();
+                updateStats();
+                showToast(`✏️ Status ${data.editId} diupdate!`, 'success');
+                this.reset();
+            }
+        });
+
+        document.getElementById('bulkUploadForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            const file = e.target.csvFile.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    const text = e.target.result;
+                    const rows = text.split('\n').map(row => row.split(','));
+                    const newEquipment = [];
+                    
+                    for (let i = 1; i < rows.length; i++) {
+                        if (rows[i][0]) {
+                            newEquipment.push({
+                                id: rows[i][0],
+                                jenis: rows[i][1],
+                                status: rows[i][2] || 'available',
+                                lokasi: rows[i][3] || 'Stockyard',
+                                jam: parseInt(rows[i][4]) || 0,
+                                servis: rows[i][5] || new Date().toLocaleDateString('id-ID'),
+                                color: '#10b981'
+                            });
+                        }
+                    }
+                    
+                    equipmentData.push(...newEquipment);
+                    renderEquipmentGrid();
+                    populateSelects();
+                    updateStats();
+                    showToast(`📊 ${newEquipment.length} alat diupload!`, 'success');
+                    e.target.reset();
+                };
+                reader.readAsText(file);
+            }
+        });
+
+        document.getElementById('maintenanceForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            const data = Object.fromEntries(new FormData(e.target));
+            maintenanceData.push(data);
+            toggleModal('maintenanceModal');
+            this.reset();
+            showToast(`🔧 Maintenance ${data.alat} dijadwalkan!`, 'success');
+        });
+
+        document.getElementById('fuelForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            const data = Object.fromEntries(new FormData(e.target));
+            fuelOrders.push(data);
+            toggleModal('fuelModal');
+            this.reset();
+            showToast(`⛽ Pesanan BBM ${data.alat} dikirim!`, 'success');
+        });
+
+        document.getElementById('routeForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            const data = Object.fromEntries(new FormData(e.target));
+            routes.push(data);
+            toggleModal('routeModal');
+            this.reset();
+            showToast(`🗺️ Rute ${data.material} dioptimasi!`, 'success');
+        });
+
+        document.getElementById('reportForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            const data = Object.fromEntries(new FormData(e.target));
+            showToast(`📄 Report ${data.reportType} digenerate!`, 'success');
+            console.log('Report data:', data);
+            this.reset();
+        });
+
+        // Export & Print
+        function exportData() {
+            const rows = [
+                ["ID Alat", "Jenis", "Status", "Lokasi", "Jam Operasi", "Terakhir Servis"],
+                ...equipmentData.map(item => [item.id, item.jenis, item.status, item.lokasi, item.jam + ' jam', item.servis])
+            ];
+
+            let csvContent = "data:text/csv;charset=utf-8," 
+                + rows.map(e => e.join(",")).join("\n");
+
+            const encodedUri = encodeURI(csvContent);
+            const link = document.createElement("a");
+            link.setAttribute("href", encodedUri);
+            link.setAttribute("download", `Inventaris_Alat_${new Date().toISOString().split('T')[0]}.csv`);
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+            showToast('📊 CSV diekspor!', 'success');
+        }
+
+        function prosesCetak() {
+            showToast('📄 Mencetak laporan...', 'info');
+            setTimeout(() => window.print(), 1000);
+        }
+
+        // Mobile Menu
+        function setupMobileMenu() {
+            const hamburger = document.getElementById('hamburger');
+            const navMenu = document.getElementById('navMenu');
+            
+            hamburger.addEventListener('click', () => {
+                navMenu.classList.toggle('open');
+            });
+            
+            document.querySelectorAll('.nav-item a').forEach(link => {
+                link.addEventListener('click', () => {
+                    navMenu.classList.remove('open');
+                });
+            });
+        }
+
+        // Toast Function
+        function showToast(message, type = 'info') {
+            const toastContainer = document.getElementById('toastContainer');
+            const toast = document.createElement('div');
+            toast.className = `toast bg-gray-800/90 border ${
+                type === 'success' ? 'border-green-400 text-green-300' :
+                type === 'warning' ? 'border-orange-400 text-orange-300' :
+                'border-blue-400 text-blue-300'
+            }`;
+            toast.innerHTML = `
+                <div class="flex items-center gap-2">
+                    <i class="fas ${type === 'success' ? 'fa-check-circle' : type === 'warning' ? 'fa-exclamation-triangle' : 'fa-info-circle'}"></i>
+                    ${message}
+                </div>
+            `;
+            toastContainer.appendChild(toast);
+            
+            // Animate in
+            requestAnimationFrame(() => toast.classList.add('show'));
+            
+            // Animate out
+            setTimeout(() => {
+                toast.classList.remove('show');
+                setTimeout(() => {
+                    if (toast.parentNode) {
+                        toast.parentNode.removeChild(toast);
+                    }
+                }, 400);
+            }, 4000);
+        }
+
+        // Keyboard Shortcuts
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape') {
+                document.querySelectorAll('.modal.show').forEach(modal => {
+                    toggleModal(modal.id);
+                });
+            }
+            if (e.key === 'F' && e.ctrlKey) {
+                e.preventDefault();
+                toggleHiddenForms();
+            }
+        });
+    </script>
+</body>
+</html>

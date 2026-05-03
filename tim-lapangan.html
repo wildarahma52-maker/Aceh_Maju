@@ -1,0 +1,1174 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tim Lapangan - RoadFix Pidie</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    
+    <style>
+        :root {
+            --ease-in-out: cubic-bezier(0.25, 0.46, 0.45, 0.94);
+            --ease-out: cubic-bezier(0, 0, 0.2, 1);
+        }
+
+        @media print {
+            nav, button, #toastContainer, .modal { display: none !important; }
+            body { background-color: #ffffff !important; color: #000000 !important; }
+            .card { background-color: #ffffff !important; border: 1px solid #ccc !important; box-shadow: none !important; }
+            main { padding: 0 !important; }
+        }
+
+        * { box-sizing: border-box; }
+        body { 
+            background: linear-gradient(135deg, #0f111a 0%, #1a1a2e 100%);
+            color: #e2e8f0; 
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            line-height: 1.6;
+            margin: 0;
+            min-height: 100vh;
+            opacity: 0;
+            transform: translateY(20px);
+            transition: all 0.8s var(--ease-out);
+        }
+        body.loaded { opacity: 1; transform: translateY(0); }
+        
+        /* Navbar Styles */
+        .navbar {
+            background: rgba(22, 27, 34, 0.95);
+            backdrop-filter: blur(20px);
+            border-bottom: 1px solid #30363d;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            padding: 0.5rem 1rem;
+        }
+        
+        .nav-container {
+            max-width: 1400px;
+            margin: 0 auto;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .nav-brand {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            font-weight: 800;
+            font-size: 1.25rem;
+            color: #58a6ff;
+            text-decoration: none;
+        }
+        
+        .nav-brand i { font-size: 1.5rem; }
+        .nav-brand span .text-blue-400 { color: #60a5fa !important; }
+        
+        .nav-menu {
+            display: flex;
+            list-style: none;
+            margin: 0;
+            padding: 0;
+            gap: 0.25rem;
+        }
+        
+        .nav-item a {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.75rem 1rem;
+            color: #94a3b8;
+            text-decoration: none;
+            border-radius: 0.75rem;
+            font-weight: 500;
+            font-size: 0.875rem;
+            transition: all 0.3s var(--ease-out);
+            white-space: nowrap;
+        }
+        
+        .nav-item a:hover, .nav-item a.active {
+            background: rgba(88, 166, 255, 0.15);
+            color: #58a6ff;
+            transform: translateY(-1px);
+        }
+        
+        .nav-user {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            padding: 0.5rem 1rem;
+            background: rgba(88, 166, 255, 0.1);
+            border: 1px solid rgba(88, 166, 255, 0.2);
+            border-radius: 1rem;
+            font-weight: 600;
+            font-size: 0.875rem;
+        }
+        
+        .nav-user .w-8 { width: 2rem; }
+        .nav-user .h-8 { height: 2rem; }
+        
+        .hamburger {
+            display: none;
+            flex-direction: column;
+            gap: 4px;
+            cursor: pointer;
+            padding: 0.5rem;
+        }
+        
+        .hamburger span {
+            width: 24px;
+            height: 3px;
+            background: #e2e8f0;
+            border-radius: 3px;
+            transition: all 0.3s ease;
+        }
+        
+        /* Main Content */
+        .main-container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 2rem 1rem;
+        }
+        
+        /* Header Section */
+        .header-section {
+            text-align: center;
+            margin-bottom: 3rem;
+        }
+        
+        .header-title {
+            font-size: clamp(1.75rem, 5vw, 3rem);
+            font-weight: 900;
+            background: linear-gradient(135deg, #58a6ff, #3b82f6, #8b5cf6);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin-bottom: 1rem;
+            line-height: 1.2;
+        }
+        
+        .header-tags {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 0.5rem;
+            margin-top: 1rem;
+        }
+        
+        .tag {
+            background: rgba(88, 166, 255, 0.15);
+            color: #58a6ff;
+            padding: 0.375rem 0.75rem;
+            border-radius: 9999px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            border: 1px solid rgba(88, 166, 255, 0.3);
+            animation: bounce 2s infinite;
+        }
+        
+        .tag:nth-child(2) { animation-delay: 0.2s; }
+        .tag:nth-child(3) { animation-delay: 0.4s; }
+        
+        @keyframes bounce {
+            0%, 20%, 50%, 80%, 100% { transform: translateY(0); }
+            40% { transform: translateY(-10px); }
+            60% { transform: translateY(-5px); }
+        }
+        
+        /* Stats Grid */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 3rem;
+        }
+        
+        .stat-card {
+            background: rgba(28, 33, 40, 0.8);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(48, 54, 61, 0.5);
+            border-radius: 1.5rem;
+            padding: 2rem;
+            transition: all 0.4s var(--ease-out);
+            position: relative;
+            overflow: hidden;
+            transform: translateY(30px);
+            opacity: 0;
+        }
+        
+        .stat-card.animate {
+            transform: translateY(0);
+            opacity: 1;
+        }
+        
+        .stat-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.1), transparent);
+            transition: left 0.6s;
+        }
+        
+        .stat-card:hover::before { left: 100%; }
+        .stat-card:hover {
+            transform: translateY(-8px);
+            box-shadow: 0 25px 50px -12px rgba(0,0,0,0.4);
+            border-color: rgba(88, 166, 255, 0.3);
+        }
+        
+        .stat-icon { 
+            font-size: 2rem; 
+            margin-bottom: 1rem;
+            transition: all 0.5s var(--ease-out);
+        }
+        
+        .stat-card:hover .stat-icon {
+            transform: rotate(12deg) scale(1.1);
+        }
+        
+        .stat-number { 
+            font-size: 2.5rem; 
+            font-weight: 900; 
+            margin-bottom: 0.5rem; 
+        }
+        
+        /* Team Grid */
+        .team-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 3rem;
+        }
+        
+        .team-card {
+            background: rgba(28, 33, 40, 0.8);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(48, 54, 61, 0.5);
+            border-radius: 1.5rem;
+            padding: 2rem;
+            transition: all 0.4s var(--ease-out);
+            cursor: pointer;
+            position: relative;
+            overflow: hidden;
+            transform: translateY(30px);
+            opacity: 0;
+        }
+        
+        .team-card.animate {
+            transform: translateY(0);
+            opacity: 1;
+        }
+        
+        .team-card::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background: linear-gradient(135deg, transparent 0%, rgba(88,166,255,0.05) 50%, transparent 100%);
+            opacity: 0;
+            transition: opacity 0.4s ease;
+        }
+        
+        .team-card:hover::before { opacity: 1; }
+        .team-card:hover {
+            transform: translateY(-8px);
+            box-shadow: 0 25px 50px -12px rgba(0,0,0,0.4);
+            border-color: rgba(88, 166, 255, 0.3);
+        }
+        
+        /* Status badges */
+        .status-badge {
+            padding: 0.375rem 0.75rem;
+            border-radius: 9999px;
+            font-size: 0.75rem;
+            font-weight: 700;
+            text-transform: uppercase;
+        }
+        
+        .status-active { background: rgba(46, 160, 67, 0.2); color: #3fb950; border: 1px solid rgba(63, 185, 80, 0.3); }
+        .status-off { background: rgba(239, 68, 68, 0.2); color: #f87171; border: 1px solid rgba(239, 68, 68, 0.3); }
+        .status-break { background: rgba(245, 158, 11, 0.2); color: #f59e0b; border: 1px solid rgba(245, 158, 11, 0.3); }
+        .status-vacation { background: rgba(59, 130, 246, 0.2); color: #3b82f6; border: 1px solid rgba(59, 130, 246, 0.3); }
+        
+        .role-badge {
+            background: rgba(88, 166, 255, 0.15);
+            color: #58a6ff;
+            padding: 0.25rem 0.5rem;
+            border-radius: 0.5rem;
+            font-size: 0.75rem;
+            font-weight: 600;
+        }
+        
+        .skill-tag {
+            background: rgba(88, 166, 255, 0.1);
+            color: #58a6ff;
+            padding: 0.25rem 0.5rem;
+            border-radius: 0.5rem;
+            font-size: 0.75rem;
+            font-weight: 500;
+        }
+        
+        /* Filter Section */
+        .filter-section {
+            background: rgba(28, 33, 40, 0.8);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(48, 54, 61, 0.5);
+            border-radius: 1.5rem;
+            padding: 2rem;
+            margin-bottom: 3rem;
+        }
+        
+        /* Action Buttons */
+        .btn {
+            padding: 0.75rem 1.5rem;
+            border: none;
+            border-radius: 0.75rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s var(--ease-out);
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-size: 0.875rem;
+            text-decoration: none;
+        }
+        
+        .btn-primary {
+            background: linear-gradient(135deg, #58a6ff, #3b82f6);
+            color: white;
+            box-shadow: 0 4px 15px rgba(88, 166, 255, 0.3);
+        }
+        
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(88, 166, 255, 0.4);
+        }
+        
+        .btn-secondary {
+            background: transparent;
+            color: #94a3b8;
+            border: 1px solid rgba(148, 163, 184, 0.3);
+        }
+        
+        .btn-secondary:hover {
+            background: rgba(88, 166, 255, 0.1);
+            color: #58a6ff;
+            border-color: rgba(88, 166, 255, 0.3);
+        }
+        
+        /* Flex utilities for buttons */
+        .flex { display: flex; }
+        .flex-wrap { flex-wrap: wrap; }
+        .gap-3 { gap: 0.75rem; }
+        .justify-center { justify-content: center; }
+        .mb-8 { margin-bottom: 2rem; }
+        
+        /* Modal Styles */
+        .modal {
+            position: fixed;
+            inset: 0;
+            background: rgba(0,0,0,0.8);
+            backdrop-filter: blur(20px);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 1rem;
+            opacity: 0;
+            visibility: hidden;
+            transition: all 0.4s var(--ease-out);
+            z-index: 1000;
+        }
+        
+        .modal.show {
+            opacity: 1;
+            visibility: visible;
+        }
+        
+        .modal-content {
+            background: rgba(28, 33, 40, 0.95);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(48, 54, 61, 0.5);
+            border-radius: 1.5rem;
+            max-width: 800px;
+            max-height: 90vh;
+            overflow-y: auto;
+            width: 100%;
+            transform: scale(0.8) translateY(20px);
+            transition: all 0.4s var(--ease-out);
+        }
+        
+        .modal.show .modal-content {
+            transform: scale(1) translateY(0);
+        }
+        
+        .modal-header {
+            padding: 2rem 2rem 1.5rem;
+            border-bottom: 1px solid rgba(48, 54, 61, 0.5);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .modal-title {
+            font-size: 1.5rem;
+            font-weight: 800;
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+        
+        .modal-close {
+            background: none;
+            border: none;
+            font-size: 1.5rem;
+            color: #94a3b8;
+            cursor: pointer;
+            padding: 0.5rem;
+            border-radius: 0.5rem;
+            transition: all 0.3s ease;
+            width: 40px;
+            height: 40px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .modal-close:hover {
+            background: rgba(148, 163, 184, 0.2);
+            color: #e2e8f0;
+            transform: scale(1.2);
+        }
+        
+        .form-group {
+            margin-bottom: 1.5rem;
+        }
+        
+        .form-label {
+            display: block;
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+            font-size: 0.875rem;
+            color: #e2e8f0;
+        }
+        
+        .form-control {
+            width: 100%;
+            padding: 1rem;
+            background: rgba(42, 42, 62, 0.8);
+            border: 1px solid rgba(64, 64, 94, 0.6);
+            border-radius: 0.75rem;
+            color: #e2e8f0;
+            font-size: 1rem;
+            transition: all 0.3s var(--ease-out);
+            transform: translateY(4px);
+        }
+        
+        .form-control:focus {
+            outline: none;
+            border-color: #58a6ff;
+            box-shadow: 0 0 0 3px rgba(88, 166, 255, 0.1);
+            background: rgba(45, 45, 68, 0.9);
+            transform: translateY(-1px);
+        }
+        
+        .form-row {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 1rem;
+        }
+        
+        .form-section {
+            background: rgba(42, 42, 62, 0.5);
+            border: 1px solid rgba(64, 64, 94, 0.4);
+            border-radius: 1rem;
+            padding: 2rem;
+            margin-bottom: 2rem;
+        }
+        
+        .modal-actions {
+            padding: 1.5rem 2rem 2rem;
+            border-top: 1px solid rgba(48, 54, 61, 0.5);
+            display: flex;
+            gap: 1rem;
+            justify-content: flex-end;
+        }
+        
+        /* Status Indicator */
+        .status-indicator {
+            animation: pulse 2s infinite;
+        }
+        
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.1); }
+        }
+        
+        /* Toast */
+        #toastContainer {
+            position: fixed;
+            bottom: 1.5rem;
+            right: 1.5rem;
+            z-index: 2000;
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+        }
+        
+        .toast {
+            padding: 1rem 1.5rem;
+            border-radius: 1rem;
+            font-weight: 600;
+            max-width: 350px;
+            transform: translateX(400px);
+            transition: all 0.4s var(--ease-out);
+            border: 1px solid;
+        }
+        
+        .toast.show { transform: translateX(0); }
+        
+        /* Text utilities */
+        .text-red-400 { color: #f87171; }
+        .text-blue-400 { color: #60a5fa; }
+        .text-green-400 { color: #4ade80; }
+        .text-purple-400 { color: #a78bfa; }
+        .text-yellow-400 { color: #fbbf24; }
+        .text-orange-400 { color: #fb923c; }
+        
+        /* Responsive */
+        @media (max-width: 768px) {
+            .hamburger { display: flex; }
+            .nav-menu {
+                position: fixed;
+                top: 100%;
+                left: 0;
+                right: 0;
+                background: rgba(22, 27, 34, 0.98);
+                backdrop-filter: blur(20px);
+                flex-direction: column;
+                padding: 1rem;
+                border-top: 1px solid rgba(48, 54, 61, 0.5);
+                max-height: 0;
+                overflow: hidden;
+                transition: all 0.4s ease;
+            }
+            
+            .nav-menu.open { max-height: 500px; }
+            
+            .main-container { padding: 1rem 0.5rem; }
+            .stats-grid, .team-grid { grid-template-columns: 1fr; }
+            .form-row { grid-template-columns: 1fr; }
+        }
+        
+        @media (max-width: 480px) {
+            .main-container { padding: 1rem 0.25rem; }
+            .header-title { font-size: 1.75rem; }
+            .team-card { padding: 1.5rem 1rem; }
+        }
+
+        /* Pengaturan khusus layar HP (Maksimal 768px) */
+        @media (max-width: 768px) {
+            .hamburger { 
+                display: flex; /* Munculkan tombol garis tiga */
+            }
+
+            .nav-user {
+                display: none; /* Sembunyikan profil user agar tidak sempit */
+            }
+
+            .nav-menu {
+                position: fixed;
+                top: 60px; /* Jarak dari atas (sesuaikan tinggi navbar) */
+                left: -100%; /* Sembunyikan menu di luar layar kiri */
+                flex-direction: column;
+                background: rgba(22, 27, 34, 0.98);
+                width: 100%;
+                height: calc(100vh - 60px);
+                transition: 0.3s;
+                gap: 0;
+                padding: 1rem;
+                z-index: 99;
+            }
+
+            /* Saat menu dibuka (class 'open' ditambah lewat JS) */
+            .nav-menu.open {
+                left: 0;
+            }
+
+            .nav-item {
+                width: 100%;
+                border-bottom: 1px solid rgba(255,255,255,0.1);
+            }
+
+            .nav-item a {
+                padding: 1.5rem;
+                width: 100%;
+                justify-content: flex-start;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Navbar -->
+    <nav class="navbar">
+        <div class="nav-container">
+            <a href="index.html" class="nav-brand">
+                <i class="fas fa-road"></i>
+                <span>RoadFix<span class="text-blue-400">Pro</span></span>
+            </a>
+            
+            <ul class="nav-menu" id="navMenu">
+                <li class="nav-item">
+                    <a href="index.html">
+                        <i class="fas fa-chart-bar"></i>
+                        Dashboard
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="titik-proyek.html">
+                        <i class="fas fa-map-marked-alt"></i>
+                        Titik Proyek
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="logistik-alat.html">
+                        <i class="fas fa-truck-pickup"></i>
+                        Logistik
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="tim-lapangan.html" class="active">
+                        <i class="fas fa-users"></i>
+                        Tim Lapangan
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="analitik.html">
+                        <i class="fas fa-chart-line"></i>
+                        Analitik
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="settings.html">
+                        <i class="fas fa-cog"></i>
+                        Settings
+                    </a>
+                </li>
+            </ul>
+            
+            <div class="nav-user">
+                <div class="w-8 h-8 bg-gradient-to-r from-blue-500 to-purple-500 rounded-full flex items-center justify-center text-white font-bold text-sm">WZ</div>
+                <span>Project Manager</span>
+            </div>
+            
+            <div class="hamburger" id="hamburger">
+                <span></span>
+                <span></span>
+                <span></span>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <div class="main-container">
+        <!-- Header -->
+        <div class="header-section">
+            <h1 class="header-title">Manajemen Tim Lapangan</h1>
+            <div class="header-tags">
+                <span class="tag">Sektor Gle Ghapui</span>
+                <span class="tag">28 Personil Total</span>
+                <span class="tag">86% Kehadiran</span>
+                <span class="tag">Update: 15 Jan 2025</span>
+            </div>
+        </div>
+
+        <!-- Action Buttons -->
+        <div class="flex flex-wrap gap-3 justify-center mb-8">
+            <button onclick="exportData()" class="btn btn-secondary">
+                <i class="fas fa-download"></i> Export Data
+            </button>
+            <button onclick="toggleModal('addMemberModal')" class="btn btn-primary">
+                <i class="fas fa-plus"></i> Tambah Personil
+            </button>
+        </div>
+
+        <!-- Stats -->
+        <div class="stats-grid">
+            <div class="stat-card">
+                <div class="stat-icon text-green-400"><i class="fas fa-users"></i></div>
+                <div class="stat-number text-green-400">24</div>
+                <div class="text-sm text-gray-400 uppercase tracking-wide font-medium">Hadir</div>
+                <div class="text-xs text-gray-500 mt-1">/ 28 Orang • 86%</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon text-blue-400"><i class="fas fa-briefcase"></i></div>
+                <div class="stat-number text-blue-400">8</div>
+                <div class="text-sm text-gray-400 uppercase tracking-wide font-medium">Tugas Aktif</div>
+                <div class="text-xs text-gray-500 mt-1">Segmen • 12 Personil</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon text-yellow-400"><i class="fas fa-hard-hat"></i></div>
+                <div class="stat-number text-yellow-400">12</div>
+                <div class="text-sm text-gray-400 uppercase tracking-wide font-medium">Operator Alat</div>
+                <div class="text-xs text-gray-500 mt-1">Peralatan Berat</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon text-purple-400"><i class="fas fa-clock"></i></div>
+                <div class="stat-number text-purple-400">07:00-17:00</div>
+                <div class="text-sm text-gray-400 uppercase tracking-wide font-medium">Shift Aktif</div>
+                <div class="text-xs text-gray-500 mt-1">Status: Aktif</div>
+            </div>
+        </div>
+
+        <!-- Filter Section -->
+        <div class="filter-section">
+            <div class="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-4 mb-6">
+                <div class="flex flex-wrap gap-3 items-center">
+                    <div class="relative">
+                        <input type="text" id="searchInput" placeholder="Cari nama atau ID personil..." 
+                               class="form-control pl-10 w-72">
+                        <i class="fas fa-search absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400"></i>
+                    </div>
+                    <select id="roleFilter" class="form-control">
+                        <option>Semua Peran</option>
+                        <option>Supervisor</option>
+                        <option>Operator</option>
+                        <option>Safety Officer</option>
+                        <option>Technician</option>
+                    </select>
+                    <select id="statusFilter" class="form-control">
+                        <option>Semua Status</option>
+                        <option>On-Site</option>
+                        <option>Off-Duty</option>
+                        <option>Break</option>
+                        <option>Vacation</option>
+                    </select>
+                </div>
+                <div class="flex gap-2 text-sm text-gray-400">
+                    <span><i class="fas fa-filter text-blue-400"></i> Filter aktif: <span id="filterCount">5</span> hasil</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Team Grid -->
+        <div class="team-grid" id="teamGrid">
+            <!-- Team cards akan dirender oleh JavaScript -->
+        </div>
+    </div>
+
+    <!-- Add Member Modal -->
+    <div id="addMemberModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 class="modal-title">
+                    <i class="fas fa-user-plus text-green-400"></i>
+                    Tambah Personil Baru
+                </h3>
+                <button class="modal-close" onclick="toggleModal('addMemberModal')">&times;</button>
+            </div>
+            
+            <form id="addMemberForm" class="p-6">
+                <!-- Informasi Pribadi -->
+                <div class="form-section">
+                    <h4 class="text-lg font-bold mb-4 text-blue-400 flex items-center gap-2">
+                        <i class="fas fa-user"></i> Informasi Pribadi
+                    </h4>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label class="form-label">Nama Lengkap <span class="text-red-400">*</span></label>
+                            <input type="text" id="memberName" class="form-control" required>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">ID Personil <span class="text-red-400">*</span></label>
+                            <input type="text" id="memberId" class="form-control" placeholder="GG-001" required>
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label class="form-label">Nomor Telepon <span class="text-red-400">*</span></label>
+                            <input type="tel" id="memberPhone" class="form-control" placeholder="+62 852-7719-2554" required>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Peran/Jabatan <span class="text-red-400">*</span></label>
+                            <select id="memberRole" class="form-control" required>
+                                <option value="">Pilih Peran</option>
+                                <option value="Supervisor">Site Supervisor</option>
+                                <option value="Operator">Operator Alat</option>
+                                <option value="Safety Officer">Safety Officer</option>
+                                <option value="Technician">Technician/Lab</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Detail Kerja -->
+                <div class="form-section">
+                    <h4 class="text-lg font-bold mb-4 text-green-400 flex items-center gap-2">
+                        <i class="fas fa-briefcase"></i> Detail Kerja
+                    </h4>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label class="form-label">Lokasi Tugas</label>
+                            <input type="text" id="memberLocation" class="form-control" placeholder="GG-001 (STA 0+000)">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Alat/Mesin</label>
+                            <input type="text" id="memberEquipment" class="form-control" placeholder="Hitachi ZX-200LC">
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Keterampilan</label>
+                        <input type="text" id="memberSkills" class="form-control" placeholder="Excavator, Dump Truck, Earthwork">
+                    </div>
+                </div>
+
+                <!-- Status -->
+                <div class="form-section">
+                    <h4 class="text-lg font-bold mb-4 text-purple-400 flex items-center gap-2">
+                        <i class="fas fa-toggle-on"></i> Status Saat Ini
+                    </h4>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label class="form-label">Status <span class="text-red-400">*</span></label>
+                            <select id="memberStatus" class="form-control" required>
+                                <option value="">Pilih Status</option>
+                                <option value="active">On-Site</option>
+                                <option value="off">Off-Duty</option>
+                                <option value="break">Break</option>
+                                <option value="vacation">Vacation</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Catatan Status</label>
+                            <input type="text" id="memberNotes" class="form-control" placeholder="Kembali: 10:30">
+                        </div>
+                    </div>
+                </div>
+
+                <div class="modal-actions">
+                    <button type="button" class="btn btn-secondary" onclick="toggleModal('addMemberModal')">Batal</button>
+                    <button type="submit" class="btn btn-primary">Simpan Personil</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Detail Modal -->
+    <div id="detailModal" class="modal">
+        <div class="modal-content max-w-sm">
+            <div class="modal-header">
+                <h3 class="modal-title">
+                    <i class="fas fa-user-circle text-blue-400"></i>
+                    Detail Personil
+                </h3>
+                <button class="modal-close" onclick="toggleModal('detailModal')">&times;</button>
+            </div>
+            <div class="p-6 text-center">
+                <img id="detailImg" src="" class="w-24 h-24 rounded-2xl mx-auto mb-4 object-cover border-2 border-gray-600">
+                <h4 id="detailName" class="text-xl font-bold mb-2"></h4>
+                <p id="detailRole" class="text-blue-400 mb-6"></p>
+                <div class="bg-gray-800 p-4 rounded-xl mb-6">
+                    <p class="text-gray-400 text-xs uppercase mb-1">Nomor Telepon</p>
+                    <p id="detailPhone" class="font-bold text-white text-lg"></p>
+                </div>
+                <button id="whatsappBtn" class="w-full btn btn-primary">
+                    <i class="fab fa-whatsapp"></i> Hubungi via WhatsApp
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Toast Container -->
+    <div id="toastContainer"></div>
+
+    <script>
+        // DATA TEAM MEMBERS
+        let allMembers = [
+            {
+                id: "GG-001", name: "Hayatun Nufus", phone: "+62 852-7719-2554", role: "Site Supervisor",
+                location: "GG-001 (STA 0+000)", equipment: "", skills: ["Aspal Hotmix", "QC Material", "Overlay"],
+                status: "active", notes: "", img: "https://i.pinimg.com/736x/04/ea/16/04ea16e9540df8e1a6d8e895b6e414cf.jpg"
+            },
+            {
+                id: "GG-002", name: "Zaskia", phone: "+62 822-3824-0627", role: "Operator Excavator",
+                location: "", equipment: "Hitachi ZX-200LC", skills: ["Excavator", "Dump Truck", "Earthwork"],
+                status: "active", notes: "", img: "https://i.pinimg.com/736x/77/7a/ea/777aea5c56a1a07daca1aac8531f7582.jpg"
+            },
+            {
+                id: "GG-SO1", name: "Wilda Rahma", phone: "+62 853-5865-5291", role: "Safety Officer",
+                location: "", equipment: "Sert. K3 Konstruksi", skills: ["K3 Konstruksi", "Safety Audit", "Risk Assessment"],
+                status: "off", notes: "", img: "https://i.pinimg.com/736x/92/99/98/929998796d22f8cc4647851d35c1f516.jpg"
+            },
+            {
+                id: "GG-003", name: "Farah Nadhira", phone: "+62 813-6776-5844", role: "Operator Roller",
+                location: "", equipment: "Roller Statis", skills: ["Roller Statis", "Compaction"],
+                status: "break", notes: "Kembali: 10:30", img: "https://i.pinimg.com/736x/75/d9/1c/75d91c8e878e07b02e48f9194c7a5c37.jpg"
+            },
+            {
+                id: "GG-LT1", name: "WIZAPUFA", phone: "+62 822-3824-0627", role: "Lab Technician",
+                location: "", equipment: "Marshall Test", skills: ["Material Testing", "Asphalt Lab", "QC"],
+                status: "active", notes: "", img: "https://i.pinimg.com/736x/c7/ff/2d/c7ff2d112346ebe4895a1f92378e0e05.jpg"
+            }
+        ];
+
+        let filteredMembers = [...allMembers];
+
+        // Initialize
+        document.addEventListener('DOMContentLoaded', function() {
+            window.addEventListener('load', () => {
+                document.body.classList.add('loaded');
+                setTimeout(() => {
+                    document.querySelectorAll('.stat-card, .team-card').forEach((card, index) => {
+                        setTimeout(() => card.classList.add('animate'), index * 150);
+                    });
+                }, 300);
+            });
+            initApp();
+            setupMobileMenu();
+            setupFilters();
+            setupEventListeners();
+        });
+
+        function initApp() {
+            renderTeamGrid();
+            updateFilterCount();
+        }
+
+        function createTeamCard(member) {
+            const statusText = {
+                active: 'ON-SITE',
+                off: 'OFF-DUTY',
+                break: 'BREAK',
+                vacation: 'VACATION'
+            }[member.status] || 'ON-SITE';
+            const statusClass = `status-${member.status}`;
+            const statusColor = {
+                active: '#22c55e',
+                off: '#f87171',
+                break: '#f59e0b',
+                vacation: '#3b82f6'
+            }[member.status];
+
+            return `
+                <div class="team-card" data-role="${member.role.toLowerCase()}" data-status="${member.status}">
+                    <div class="flex justify-between items-start mb-4">
+                        <span class="font-mono font-bold text-blue-400 text-sm bg-blue-500/10 px-3 py-1 rounded-full">${member.id}</span>
+                        <span class="status-badge ${statusClass}">${statusText}</span>
+                    </div>
+                    <div class="flex items-start gap-4 mb-4">
+                        <div class="relative flex-shrink-0">
+                            <img src="${member.img}" class="w-20 h-20 rounded-2xl object-cover border-2 border-gray-600">
+                            <div class="absolute -bottom-1 -right-1 w-6 h-6 bg-[${statusColor}] border-4 border-background rounded-full flex items-center justify-center status-indicator">
+                                <i class="fas fa-circle text-xs text-white"></i>
+                            </div>
+                        </div>
+                        <div class="flex-1 min-w-0">
+                            <h4 class="font-bold text-xl mb-2 truncate">${member.name}</h4>
+                            <p class="text-blue-400 text-sm font-medium mb-2">${member.role}</p>
+                            ${member.location ? `<p class="text-gray-400 text-sm mb-1"><i class="fas fa-map-marker-alt mr-1"></i>${member.location}</p>` : ''}
+                            ${member.equipment ? `<p class="text-gray-400 text-sm"><i class="fas fa-tools mr-1 text-yellow-400"></i>${member.equipment}</p>` : ''}
+                        </div>
+                    </div>
+                    <div class="flex flex-wrap gap-2 mb-6">
+                        ${member.skills.map(skill => `<span class="skill-tag">${skill}</span>`).join('')}
+                    </div>
+                    ${member.notes ? `<p class="text-xs text-gray-500 italic mb-4">${member.notes}</p>` : ''}
+                    <div class="flex gap-2">
+                        <button class="btn-detail flex-1 btn btn-secondary" data-id="${member.id}">
+                            <i class="fas fa-eye"></i> Detail
+                        </button>
+                        <button class="btn-whatsapp flex-1 btn btn-primary" data-phone="${member.phone}">
+                            <i class="fab fa-whatsapp"></i> WhatsApp
+                        </button>
+                    </div>
+                </div>
+            `;
+        }
+
+        function renderTeamGrid() {
+            document.getElementById('teamGrid').innerHTML = filteredMembers.map(createTeamCard).join('');
+            // Re-animate team cards
+            setTimeout(() => {
+                document.querySelectorAll('.team-card').forEach((card, index) => {
+                    setTimeout(() => card.classList.add('animate'), index * 100);
+                });
+            }, 100);
+        }
+
+        function setupFilters() {
+            document.getElementById('searchInput').addEventListener('input', filterMembers);
+            document.getElementById('roleFilter').addEventListener('change', filterMembers);
+            document.getElementById('statusFilter').addEventListener('change', filterMembers);
+        }
+
+        function filterMembers() {
+            const searchTerm = document.getElementById('searchInput').value.toLowerCase();
+            const roleFilter = document.getElementById('roleFilter').value;
+            const statusFilter = document.getElementById('statusFilter').value;
+
+            filteredMembers = allMembers.filter(member => {
+                const matchesSearch = member.name.toLowerCase().includes(searchTerm) || 
+                                    member.role.toLowerCase().includes(searchTerm) ||
+                                    member.id.toLowerCase().includes(searchTerm);
+                const matchesRole = !roleFilter || member.role.toLowerCase().includes(roleFilter.toLowerCase());
+                const matchesStatus = !statusFilter || member.status === statusFilter;
+                
+                return matchesSearch && matchesRole && matchesStatus;
+            });
+
+            renderTeamGrid();
+            updateFilterCount();
+        }
+
+        function updateFilterCount() {
+            document.getElementById('filterCount').textContent = filteredMembers.length;
+        }
+
+        function setupEventListeners() {
+            // Detail modal
+            document.addEventListener('click', function(e) {
+                if (e.target.classList.contains('btn-detail')) {
+                    const memberId = e.target.dataset.id;
+                    showDetailModal(memberId);
+                }
+                if (e.target.classList.contains('btn-whatsapp')) {
+                    const phone = e.target.dataset.phone.replace(/\D/g, '');
+                    window.open(`https://wa.me/${phone}`, '_blank');
+                }
+            });
+
+            // Add member form
+            document.getElementById('addMemberForm').addEventListener('submit', addNewMember);
+        }
+
+        function showDetailModal(memberId) {
+            const member = allMembers.find(m => m.id === memberId);
+            if (member) {
+                document.getElementById('detailImg').src = member.img;
+                document.getElementById('detailName').textContent = member.name;
+                document.getElementById('detailRole').textContent = member.role;
+                document.getElementById('detailPhone').textContent = member.phone;
+                document.getElementById('whatsappBtn').dataset.phone = member.phone;
+                toggleModal('detailModal');
+            }
+        }
+
+        function addNewMember(e) {
+            e.preventDefault();
+            
+            const newMember = {
+                id: document.getElementById('memberId').value,
+                name: document.getElementById('memberName').value,
+                phone: document.getElementById('memberPhone').value,
+                role: document.getElementById('memberRole').value,
+                location: document.getElementById('memberLocation').value,
+                equipment: document.getElementById('memberEquipment').value,
+                skills: document.getElementById('memberSkills').value.split(',').map(s => s.trim()).filter(s => s),
+                status: document.getElementById('memberStatus').value,
+                notes: document.getElementById('memberNotes').value,
+                img: "https://i.pinimg.com/736x/04/ea/16/04ea16e9540df8e1a6d8e895b6e414cf.jpg"
+            };
+
+            allMembers.unshift(newMember);
+            filterMembers();
+            toggleModal('addMemberModal');
+            e.target.reset();
+            
+            showToast(`Personil ${newMember.name} berhasil ditambahkan!`, 'success');
+        }
+
+        function exportData() {
+            showToast('Data personil diekspor ke Excel', 'success');
+        }
+
+        // Modal Functions
+        function toggleModal(modalId) {
+            const modal = document.getElementById(modalId);
+            modal.classList.toggle('show');
+        }
+
+        // Mobile Menu
+        function setupMobileMenu() {
+            const hamburger = document.getElementById('hamburger');
+            const navMenu = document.getElementById('navMenu');
+            
+            hamburger.addEventListener('click', () => {
+                navMenu.classList.toggle('open');
+            });
+            
+            document.querySelectorAll('.nav-item a').forEach(link => {
+                link.addEventListener('click', () => {
+                    navMenu.classList.remove('open');
+                });
+            });
+        }
+
+        // Toast Function
+        function showToast(message, type = 'info') {
+            const toastContainer = document.getElementById('toastContainer');
+            const toast = document.createElement('div');
+            toast.className = `toast bg-gray-800/90 border ${
+                type === 'success' ? 'border-green-400 text-green-300' :
+                type === 'warning' ? 'border-orange-400 text-orange-300' :
+                'border-blue-400 text-blue-300'
+            }`;
+            toast.innerHTML = `
+                <div class="flex items-center gap-2">
+                    <i class="fas ${type === 'success' ? 'fa-check-circle' : type === 'warning' ? 'fa-exclamation-triangle' : 'fa-info-circle'}"></i>
+                    ${message}
+                </div>
+            `;
+            toastContainer.appendChild(toast);
+            
+            // Animate in
+            requestAnimationFrame(() => toast.classList.add('show'));
+            
+            // Animate out
+            setTimeout(() => {
+                toast.classList.remove('show');
+                setTimeout(() => {
+                    if (toast.parentNode) {
+                        toast.parentNode.removeChild(toast);
+                    }
+                }, 400);
+            }, 4000);
+        }
+
+        // Keyboard Shortcuts
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape') {
+                document.querySelectorAll('.modal.show').forEach(modal => {
+                    toggleModal(modal.id);
+                });
+            }
+        });
+
+        // Fungsi untuk membuka dan menutup menu mobile
+        const hamburger = document.getElementById('hamburger');
+        const navMenu = document.getElementById('navMenu');
+
+        if (hamburger && navMenu) {
+            hamburger.addEventListener('click', () => {
+                navMenu.classList.toggle('open');
+                
+                // Opsional: Animasi tombol hamburger jadi tanda silang (X)
+                const spans = hamburger.querySelectorAll('span');
+                spans[0].classList.toggle('rotate-45');
+                spans[1].classList.toggle('opacity-0');
+                spans[2].classList.toggle('-rotate-45');
+            });
+        }
+
+        // Tutup menu otomatis jika salah satu link diklik
+        document.querySelectorAll('.nav-item a').forEach(link => {
+            link.addEventListener('click', () => {
+                navMenu.classList.remove('open');
+            });
+        });
+    </script>
+</body>
+</html>

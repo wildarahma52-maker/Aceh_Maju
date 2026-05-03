@@ -1,0 +1,1407 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Monitor Pemulihan Jalan - Gle Ghapui Sector</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    
+    <style>
+        :root {
+            --ease-in-out: cubic-bezier(0.25, 0.46, 0.45, 0.94);
+            --ease-out: cubic-bezier(0, 0, 0.2, 1);
+        }
+
+        @media print {
+            nav, button, #toastContainer, .modal { display: none !important; }
+            body { background-color: #ffffff !important; color: #000000 !important; }
+            .card { background-color: #ffffff !important; border: 1px solid #ccc !important; box-shadow: none !important; }
+            main { padding: 0 !important; }
+            canvas { max-height: 300px !important; }
+        }
+
+        * { box-sizing: border-box; }
+        body { 
+            background: linear-gradient(135deg, #0f111a 0%, #1a1a2e 100%);
+            color: #e2e8f0; 
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            line-height: 1.6;
+            margin: 0;
+            min-height: 100vh;
+            opacity: 0;
+            transform: translateY(20px);
+            transition: all 0.8s var(--ease-out);
+        }
+        body.loaded { opacity: 1; transform: translateY(0); }
+        
+        /* Navbar Styles */
+        .navbar {
+            background: rgba(22, 27, 34, 0.95);
+            backdrop-filter: blur(20px);
+            border-bottom: 1px solid #30363d;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            padding: 0.5rem 1rem;
+        }
+        
+        .nav-container {
+            max-width: 1400px;
+            margin: 0 auto;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .nav-brand {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            font-weight: 800;
+            font-size: 1.25rem;
+            color: #58a6ff;
+            text-decoration: none;
+        }
+        
+        .nav-brand i { font-size: 1.5rem; }
+        .nav-brand span .text-blue-400 { color: #60a5fa !important; }
+        
+        .nav-menu {
+            display: flex;
+            list-style: none;
+            margin: 0;
+            padding: 0;
+            gap: 0.25rem;
+        }
+        
+        .nav-item a {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.75rem 1rem;
+            color: #94a3b8;
+            text-decoration: none;
+            border-radius: 0.75rem;
+            font-weight: 500;
+            font-size: 0.875rem;
+            transition: all 0.3s var(--ease-out);
+            white-space: nowrap;
+        }
+        
+        .nav-item a:hover, .nav-item a.active {
+            background: rgba(88, 166, 255, 0.15);
+            color: #58a6ff;
+            transform: translateY(-1px);
+        }
+        
+        .nav-user {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            padding: 0.5rem 1rem;
+            background: rgba(88, 166, 255, 0.1);
+            border: 1px solid rgba(88, 166, 255, 0.2);
+            border-radius: 1rem;
+            font-weight: 600;
+            font-size: 0.875rem;
+        }
+        
+        .nav-user .w-8 { width: 2rem; }
+        .nav-user .h-8 { height: 2rem; }
+        
+        .hamburger {
+            display: none;
+            flex-direction: column;
+            gap: 4px;
+            cursor: pointer;
+            padding: 0.5rem;
+        }
+        
+        .hamburger span {
+            width: 24px;
+            height: 3px;
+            background: #e2e8f0;
+            border-radius: 3px;
+            transition: all 0.3s ease;
+        }
+        
+        /* Main Content */
+        .main-container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 2rem 1rem;
+        }
+        
+        /* Header Section */
+        .header-section {
+            text-align: center;
+            margin-bottom: 3rem;
+        }
+        
+        .header-title {
+            font-size: clamp(1.75rem, 5vw, 3rem);
+            font-weight: 900;
+            background: linear-gradient(135deg, #58a6ff, #3b82f6, #8b5cf6);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin-bottom: 1rem;
+            line-height: 1.2;
+        }
+        
+        .header-tags {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 0.5rem;
+            margin-top: 1rem;
+        }
+        
+        .tag {
+            background: rgba(88, 166, 255, 0.15);
+            color: #58a6ff;
+            padding: 0.375rem 0.75rem;
+            border-radius: 9999px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            border: 1px solid rgba(88, 166, 255, 0.3);
+            animation: bounce 2s infinite;
+        }
+        
+        .tag:nth-child(2) { animation-delay: 0.2s; }
+        .tag:nth-child(3) { animation-delay: 0.4s; }
+        
+        @keyframes bounce {
+            0%, 20%, 50%, 80%, 100% { transform: translateY(0); }
+            40% { transform: translateY(-10px); }
+            60% { transform: translateY(-5px); }
+        }
+        
+        /* Stats Grid */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 3rem;
+        }
+        
+        .stat-card {
+            background: rgba(28, 33, 40, 0.8);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(48, 54, 61, 0.5);
+            border-radius: 1.5rem;
+            padding: 2rem;
+            transition: all 0.4s var(--ease-out);
+            position: relative;
+            overflow: hidden;
+            transform: translateY(30px);
+            opacity: 0;
+        }
+        
+        .stat-card.animate {
+            transform: translateY(0);
+            opacity: 1;
+        }
+        
+        .stat-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.1), transparent);
+            transition: left 0.6s;
+        }
+        
+        .stat-card:hover::before { left: 100%; }
+        .stat-card:hover {
+            transform: translateY(-8px);
+            box-shadow: 0 25px 50px -12px rgba(0,0,0,0.4);
+            border-color: rgba(88, 166, 255, 0.3);
+        }
+        
+        .stat-icon { 
+            font-size: 2rem; 
+            margin-bottom: 1rem;
+            transition: all 0.5s var(--ease-out);
+        }
+        
+        .stat-card:hover .stat-icon {
+            transform: rotate(12deg) scale(1.1);
+        }
+        
+        .stat-number { 
+            font-size: 2.5rem; 
+            font-weight: 900; 
+            margin-bottom: 0.5rem; 
+        }
+        
+        /* Table Styles */
+        .table-container {
+            background: rgba(28, 33, 40, 0.8);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(48, 54, 61, 0.5);
+            border-radius: 1.5rem;
+            overflow: hidden;
+            margin-bottom: 3rem;
+        }
+        
+        .table-header {
+            padding: 2rem;
+            border-bottom: 1px solid rgba(48, 54, 61, 0.5);
+            background: rgba(15, 17, 26, 0.7);
+        }
+        
+        .table-wrapper {
+            overflow-x: auto;
+        }
+        
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        
+        th {
+            padding: 1.5rem 1rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            font-size: 0.75rem;
+            color: #94a3b8;
+            text-align: left;
+        }
+        
+        td {
+            padding: 1.5rem 1rem;
+            border-bottom: 1px solid rgba(48, 54, 61, 0.3);
+            transition: all 0.3s ease;
+        }
+        
+        tr:hover {
+            background: rgba(88, 166, 255, 0.05);
+        }
+        
+        /* Status badges */
+        .status-badge {
+            padding: 0.375rem 0.75rem;
+            border-radius: 9999px;
+            font-size: 0.75rem;
+            font-weight: 700;
+            text-transform: uppercase;
+        }
+        
+        .status-done { background: rgba(46, 160, 67, 0.2); color: #3fb950; border: 1px solid rgba(63, 185, 80, 0.3); }
+        .status-progress { background: rgba(189, 147, 249, 0.2); color: #bd93f9; border: 1px solid rgba(189, 147, 249, 0.3); }
+        .status-pending { background: rgba(210, 153, 34, 0.2); color: #d29922; border: 1px solid rgba(210, 153, 34, 0.3); }
+        .status-delayed { background: rgba(239, 68, 68, 0.2); color: #f87171; border: 1px solid rgba(239, 68, 68, 0.3); }
+        
+        /* Progress bar */
+        .progress-bar {
+            width: 100px;
+            height: 8px;
+            background: rgba(48, 54, 61, 0.7);
+            border-radius: 4px;
+            overflow: hidden;
+            margin-right: 0.5rem;
+            display: inline-block;
+            flex-shrink: 0;
+        }
+        
+        .progress-fill {
+            height: 100%;
+            transition: width 0.6s ease-out;
+            border-radius: 4px;
+            transform: scaleX(0);
+            transform-origin: left;
+        }
+        
+        .progress-fill.animate { transform: scaleX(1); }
+        
+        /* Pagination */
+        .pagination {
+            padding: 2rem;
+            background: rgba(15, 17, 26, 0.7);
+            border-top: 1px solid rgba(48, 54, 61, 0.5);
+        }
+        
+        .page-btn {
+            padding: 0.5rem 1rem;
+            border-radius: 0.75rem;
+            border: none;
+            background: transparent;
+            color: #94a3b8;
+            cursor: pointer;
+            transition: all 0.3s var(--ease-out);
+            font-weight: 500;
+        }
+        
+        .page-btn:hover, .page-btn.active {
+            background: rgba(88, 166, 255, 0.2);
+            color: #58a6ff;
+            transform: translateY(-1px);
+        }
+        
+        /* Action Buttons */
+        .btn {
+            padding: 0.75rem 1.5rem;
+            border: none;
+            border-radius: 0.75rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s var(--ease-out);
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-size: 0.875rem;
+            text-decoration: none;
+        }
+        
+        .btn-primary {
+            background: linear-gradient(135deg, #58a6ff, #3b82f6);
+            color: white;
+            box-shadow: 0 4px 15px rgba(88, 166, 255, 0.3);
+        }
+        
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(88, 166, 255, 0.4);
+        }
+        
+        .btn-secondary {
+            background: transparent;
+            color: #94a3b8;
+            border: 1px solid rgba(148, 163, 184, 0.3);
+        }
+        
+        .btn-secondary:hover {
+            background: rgba(88, 166, 255, 0.1);
+            color: #58a6ff;
+            border-color: rgba(88, 166, 255, 0.3);
+        }
+        
+        /* Flex utilities for buttons */
+        .flex { display: flex; }
+        .flex-wrap { flex-wrap: wrap; }
+        .gap-3 { gap: 0.75rem; }
+        .justify-center { justify-content: center; }
+        .mb-8 { margin-bottom: 2rem; }
+        
+        /* Quick Actions */
+        .actions-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 1.5rem;
+            margin-top: 3rem;
+        }
+        
+        .action-card {
+            background: rgba(28, 33, 40, 0.8);
+            border: 1px solid rgba(48, 54, 61, 0.5);
+            border-radius: 1.5rem;
+            padding: 2rem 1.5rem;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.4s var(--ease-out);
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .action-card::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background: linear-gradient(135deg, transparent 0%, rgba(88,166,255,0.05) 50%, transparent 100%);
+            opacity: 0;
+            transition: opacity 0.4s ease;
+        }
+        
+        .action-card:hover::before { opacity: 1; }
+        .action-card:hover {
+            transform: translateY(-8px);
+            box-shadow: 0 20px 40px -10px rgba(0,0,0,0.4);
+            border-color: rgba(88, 166, 255, 0.3);
+        }
+        
+        .action-icon {
+            width: 64px;
+            height: 64px;
+            border-radius: 1rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.75rem;
+            color: white;
+            margin: 0 auto 1.5rem;
+            transition: all 0.5s var(--ease-out);
+        }
+        
+        .action-card:hover .action-icon {
+            transform: scale(1.1) rotate(5deg);
+        }
+        
+        /* Modal Styles */
+        .modal {
+            position: fixed;
+            inset: 0;
+            background: rgba(0,0,0,0.8);
+            backdrop-filter: blur(20px);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 1rem;
+            opacity: 0;
+            visibility: hidden;
+            transition: all 0.4s var(--ease-out);
+            z-index: 1000;
+        }
+        
+        .modal.show {
+            opacity: 1;
+            visibility: visible;
+        }
+        
+        .modal-content {
+            background: rgba(28, 33, 40, 0.95);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(48, 54, 61, 0.5);
+            border-radius: 1.5rem;
+            max-width: 900px;
+            max-height: 90vh;
+            overflow-y: auto;
+            width: 100%;
+            transform: scale(0.8) translateY(20px);
+            transition: all 0.4s var(--ease-out);
+        }
+        
+        .modal.show .modal-content {
+            transform: scale(1) translateY(0);
+        }
+        
+        .modal-header {
+            padding: 2rem 2rem 1.5rem;
+            border-bottom: 1px solid rgba(48, 54, 61, 0.5);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .modal-title {
+            font-size: 1.5rem;
+            font-weight: 800;
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+        
+        .modal-close {
+            background: none;
+            border: none;
+            font-size: 1.5rem;
+            color: #94a3b8;
+            cursor: pointer;
+            padding: 0.5rem;
+            border-radius: 0.5rem;
+            transition: all 0.3s ease;
+            width: 40px;
+            height: 40px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .modal-close:hover {
+            background: rgba(148, 163, 184, 0.2);
+            color: #e2e8f0;
+            transform: scale(1.2);
+        }
+        
+        .form-group {
+            margin-bottom: 1.5rem;
+        }
+        
+        .form-label {
+            display: block;
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+            font-size: 0.875rem;
+            color: #e2e8f0;
+        }
+        
+        .form-control {
+            width: 100%;
+            padding: 1rem;
+            background: rgba(42, 42, 62, 0.8);
+            border: 1px solid rgba(64, 64, 94, 0.6);
+            border-radius: 0.75rem;
+            color: #e2e8f0;
+            font-size: 1rem;
+            transition: all 0.3s var(--ease-out);
+            transform: translateY(4px);
+        }
+        
+        .form-control:focus {
+            outline: none;
+            border-color: #58a6ff;
+            box-shadow: 0 0 0 3px rgba(88, 166, 255, 0.1);
+            background: rgba(45, 45, 68, 0.9);
+            transform: translateY(-1px);
+        }
+        
+        .form-row {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 1rem;
+        }
+        
+        .form-section {
+            background: rgba(42, 42, 62, 0.5);
+            border: 1px solid rgba(64, 64, 94, 0.4);
+            border-radius: 1rem;
+            padding: 2rem;
+            margin-bottom: 2rem;
+        }
+        
+        .section-title {
+            font-size: 1.125rem;
+            font-weight: 700;
+            margin-bottom: 1.5rem;
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+        
+        .modal-actions {
+            padding: 1.5rem 2rem 2rem;
+            border-top: 1px solid rgba(48, 54, 61, 0.5);
+            display: flex;
+            gap: 1rem;
+            justify-content: flex-end;
+        }
+        
+        /* File Upload */
+        .file-upload-area {
+            border: 2px dashed rgba(64, 64, 94, 0.6);
+            border-radius: 0.75rem;
+            padding: 3rem 2rem;
+            text-align: center;
+            background: rgba(42, 42, 62, 0.4);
+            transition: all 0.3s var(--ease-out);
+            cursor: pointer;
+        }
+        
+        .file-upload-area:hover, .file-upload-area.dragover {
+            border-color: #58a6ff;
+            background: rgba(88, 166, 255, 0.1);
+            transform: translateY(-2px);
+        }
+        
+        .image-preview {
+            max-width: 120px;
+            max-height: 120px;
+            border-radius: 0.5rem;
+            object-fit: cover;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.5);
+        }
+        
+        .hidden { display: none !important; }
+        
+        /* Toast */
+        #toastContainer {
+            position: fixed;
+            bottom: 1.5rem;
+            right: 1.5rem;
+            z-index: 2000;
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+        }
+        
+        .toast {
+            padding: 1rem 1.5rem;
+            border-radius: 1rem;
+            font-weight: 600;
+            max-width: 350px;
+            transform: translateX(400px);
+            transition: all 0.4s var(--ease-out);
+            border: 1px solid;
+        }
+        
+        .toast.show { transform: translateX(0); }
+        
+        /* Text utilities */
+        .text-red-400 { color: #f87171; }
+        .text-blue-400 { color: #60a5fa; }
+        .text-green-400 { color: #4ade80; }
+        .text-purple-400 { color: #a78bfa; }
+        .text-orange-400 { color: #fb923c; }
+        
+        /* Responsive */
+        @media (max-width: 768px) {
+            .hamburger { display: flex; }
+            .nav-menu {
+                position: fixed;
+                top: 100%;
+                left: 0;
+                right: 0;
+                background: rgba(22, 27, 34, 0.98);
+                backdrop-filter: blur(20px);
+                flex-direction: column;
+                padding: 1rem;
+                border-top: 1px solid rgba(48, 54, 61, 0.5);
+                max-height: 0;
+                overflow: hidden;
+                transition: all 0.4s ease;
+            }
+            
+            .nav-menu.open { max-height: 500px; }
+            
+            .main-container { padding: 1rem 0.5rem; }
+            .stats-grid, .actions-grid { grid-template-columns: 1fr; }
+            .form-row { grid-template-columns: 1fr; }
+        }
+        
+        @media (max-width: 480px) {
+            .main-container { padding: 1rem 0.25rem; }
+            .header-title { font-size: 1.75rem; }
+            .stat-card, .action-card { padding: 1.5rem 1rem; }
+        }
+
+        /* Pengaturan khusus layar HP (Maksimal 768px) */
+@media (max-width: 768px) {
+    .hamburger { 
+        display: flex; /* Munculkan tombol garis tiga */
+    }
+
+    .nav-user {
+        display: none; /* Sembunyikan profil user agar tidak sempit */
+    }
+
+    .nav-menu {
+        position: fixed;
+        top: 60px; /* Jarak dari atas (sesuaikan tinggi navbar) */
+        left: -100%; /* Sembunyikan menu di luar layar kiri */
+        flex-direction: column;
+        background: rgba(22, 27, 34, 0.98);
+        width: 100%;
+        height: calc(100vh - 60px);
+        transition: 0.3s;
+        gap: 0;
+        padding: 1rem;
+        z-index: 99;
+    }
+
+    /* Saat menu dibuka (class 'open' ditambah lewat JS) */
+    .nav-menu.open {
+        left: 0;
+    }
+
+    .nav-item {
+        width: 100%;
+        border-bottom: 1px solid rgba(255,255,255,0.1);
+    }
+
+    .nav-item a {
+        padding: 1.5rem;
+        width: 100%;
+        justify-content: flex-start;
+    }
+}
+    </style>
+</head>
+<body>
+    <!-- Navbar -->
+    <nav class="navbar">
+        <div class="nav-container">
+            <a href="index.html" class="nav-brand">
+                <i class="fas fa-road"></i>
+                <span>RoadFix<span class="text-blue-400">Pro</span></span>
+            </a>
+            
+            <ul class="nav-menu" id="navMenu">
+                <li class="nav-item">
+                    <a href="index.html" class="active">
+                        <i class="fas fa-th-large"></i>
+                        Dashboard
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="titik-proyek.html">
+                        <i class="fas fa-map-marked-alt"></i>
+                        Titik Proyek
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="logistik-alat.html">
+                        <i class="fas fa-truck-pickup"></i>
+                        Logistik
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="tim-lapangan.html">
+                        <i class="fas fa-users"></i>
+                        Tim Lapangan
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="analitik.html">
+                        <i class="fas fa-chart-line"></i>
+                        Analitik
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="settings.html">
+                        <i class="fas fa-cog"></i>
+                        Settings
+                    </a>
+                </li>
+            </ul>
+            
+            <div class="nav-user">
+                <div class="w-8 h-8 bg-gradient-to-r from-blue-500 to-purple-500 rounded-full flex items-center justify-center text-white font-bold text-sm">WZ</div>
+                <span>Project Manager</span>
+            </div>
+            
+            <div class="hamburger" id="hamburger">
+                <span></span>
+                <span></span>
+                <span></span>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <div class="main-container">
+        <!-- Header -->
+        <div class="header-section">
+            <h1 class="header-title">Monitor Pemulihan Jalan</h1>
+            <div class="header-tags">
+                <span class="tag">Kec. Indrajaya - Mila</span>
+                <span class="tag">Kab. Pidie</span>
+                <span class="tag">Update: 15 Jan 2025</span>
+            </div>
+        </div>
+
+        <!-- Action Buttons -->
+        <div class="flex flex-wrap gap-3 justify-center mb-8">
+            <button onclick="prosesCetak()" class="btn btn-secondary">
+                <i class="fas fa-print"></i> Cetak Laporan
+            </button>
+            <button onclick="eksporData()" class="btn btn-secondary">
+                <i class="fas fa-download"></i> Ekspor Data
+            </button>
+            <button onclick="toggleModal('laporanModal')" class="btn btn-primary">
+                <i class="fas fa-plus"></i> Tambah Laporan
+            </button>
+        </div>
+
+        <!-- Stats -->
+        <div class="stats-grid">
+            <div class="stat-card">
+                <div class="stat-icon text-blue-400"><i class="fas fa-road"></i></div>
+                <div class="stat-number text-blue-400">4.850</div>
+                <div class="text-sm text-gray-400 uppercase tracking-wide font-medium">Meter Total</div>
+                <div class="progress-bar mt-4">
+                    <div class="progress-fill bg-gradient-to-r from-green-400 to-green-500 animate" style="width: 97%"></div>
+                </div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon text-green-400"><i class="fas fa-chart-line"></i></div>
+                <div class="stat-number text-green-400">72.8%</div>
+                <div class="text-sm text-gray-400 uppercase tracking-wide font-medium">Progres Fisik</div>
+                <div class="flex items-center gap-2 text-sm text-green-400 font-medium mt-2">
+                    <i class="fas fa-arrow-up"></i> +4.2% minggu ini
+                </div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon text-yellow-400"><i class="fas fa-wallet"></i></div>
+                <div class="stat-number text-yellow-400">Rp 14.2M</div>
+                <div class="text-sm text-gray-400 uppercase tracking-wide font-medium">Anggaran Terpakai</div>
+                <div class="progress-bar mt-4">
+                    <div class="progress-fill bg-gradient-to-r from-yellow-400 to-yellow-500 animate" style="width: 77%"></div>
+                </div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon text-orange-400"><i class="fas fa-calendar-times"></i></div>
+                <div class="stat-number text-orange-400">38</div>
+                <div class="text-sm text-gray-400 uppercase tracking-wide font-medium">Hari Tersisa</div>
+                <p class="text-xs text-gray-500 mt-1">Target: 28 Feb 2025</p>
+            </div>
+        </div>
+
+        <!-- Projects Table -->
+        <div class="table-container">
+            <div class="table-header">
+                <h3 class="text-xl font-bold text-white mb-2">Detail Pekerjaan Lapangan</h3>
+                <p class="text-gray-400">Periode Januari - Maret 2025 | 12 Segmen Aktif</p>
+            </div>
+            <div class="table-wrapper">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>ID Segmen</th>
+                            <th>Lokasi (STA)</th>
+                            <th>Jenis Pekerjaan</th>
+                            <th>Panjang</th>
+                            <th>Progres</th>
+                            <th>Status</th>
+                            <th class="text-center">Aksi</th>
+                        </tr>
+                    </thead>
+                    <tbody id="table-body"></tbody>
+                </table>
+            </div>
+            <div class="pagination">
+                <div class="flex items-center justify-between text-sm text-gray-400">
+                    <span id="showing-text">Menampilkan...</span>
+                    <div class="flex gap-2">
+                        <button onclick="renderTable(1)" class="page-btn">1</button>
+                        <button onclick="renderTable(2)" class="page-btn">2</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Quick Actions -->
+        <div class="actions-grid">
+            <div class="action-card" onclick="toggleModal('uploadModal')">
+                <div class="action-icon bg-gradient-to-r from-blue-500 to-blue-600">
+                    <i class="fas fa-camera"></i>
+                </div>
+                <h4 class="font-bold text-xl mb-2">Upload Progres</h4>
+                <p class="text-gray-400 text-sm">Unggah foto progres harian</p>
+            </div>
+            <div class="action-card" onclick="toggleModal('laporanModal')">
+                <div class="action-icon bg-gradient-to-r from-emerald-500 to-emerald-600">
+                    <i class="fas fa-file-alt"></i>
+                </div>
+                <h4 class="font-bold text-xl mb-2">Laporan Harian</h4>
+                <p class="text-gray-400 text-sm">Buat laporan kerja harian</p>
+            </div>
+            <div class="action-card" onclick="toggleModal('notifModal')">
+                <div class="action-icon bg-gradient-to-r from-orange-500 to-orange-600">
+                    <i class="fas fa-bullhorn"></i>
+                </div>
+                <h4 class="font-bold text-xl mb-2">Kelola Kendala</h4>
+                <p class="text-gray-400 text-sm">Laporkan kendala proyek</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL UPLOAD FOTO -->
+    <div id="uploadModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 class="modal-title">
+                    <i class="fas fa-camera text-blue-400"></i>
+                    Upload Progres Foto
+                </h3>
+                <button class="modal-close" onclick="toggleModal('uploadModal')">&times;</button>
+            </div>
+            <form id="uploadForm" class="p-6">
+                <div class="form-section">
+                    <h4 class="section-title text-blue-400">
+                        <i class="fas fa-info-circle"></i>
+                        Informasi Segmen
+                    </h4>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label class="form-label">ID Segmen <span class="text-red-400">*</span></label>
+                            <select id="upload-segment" class="form-control" required>
+                                <option value="">Pilih Segmen</option>
+                                <option value="GG-001">GG-001 (Overlay Aspal)</option>
+                                <option value="GG-002">GG-002 (Box Culvert)</option>
+                                <option value="GG-003">GG-003 (Guardrail)</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Tanggal Foto</label>
+                            <input type="date" id="upload-date" class="form-control" required>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="form-section">
+                    <h4 class="section-title text-green-400">
+                        <i class="fas fa-image"></i>
+                        Upload Foto Progres
+                    </h4>
+                    <div class="file-upload-area" onclick="document.getElementById('photoInput').click()">
+                        <i class="fas fa-cloud-upload-alt text-4xl text-gray-400 mb-4"></i>
+                        <p class="text-lg font-semibold text-gray-300 mb-1">Klik atau drag & drop foto</p>
+                        <p class="text-sm text-gray-500">JPG, PNG (Max 5MB)</p>
+                        <input type="file" id="photoInput" accept="image/*" class="hidden" multiple>
+                        <div id="imagePreview" class="mt-6 flex flex-wrap gap-4 hidden"></div>
+                    </div>
+                </div>
+                
+                <div class="modal-actions">
+                    <button type="button" class="btn btn-secondary" onclick="toggleModal('uploadModal')">
+                        <i class="fas fa-times"></i> Batal
+                    </button>
+                    <button type="submit" class="btn btn-primary">
+                        <i class="fas fa-upload"></i> Upload Foto
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- MODAL LAPORAN HARIAN -->
+    <div id="laporanModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 class="modal-title">
+                    <i class="fas fa-file-alt text-green-400"></i>
+                    Laporan Harian
+                </h3>
+                <button class="modal-close" onclick="toggleModal('laporanModal')">&times;</button>
+            </div>
+            <form id="laporanForm" class="p-6">
+                <div class="form-section">
+                    <h4 class="section-title text-blue-400">
+                        <i class="fas fa-calendar-day"></i>
+                        Informasi Tanggal
+                    </h4>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label class="form-label">Tanggal Laporan <span class="text-red-400">*</span></label>
+                            <input type="date" id="laporan-date" class="form-control" required>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Shift Kerja</label>
+                            <select id="laporan-shift" class="form-control">
+                                <option value="pagi">Pagi (06:00-14:00)</option>
+                                <option value="siang">Siang (14:00-22:00)</option>
+                                <option value="malam">Malam (22:00-06:00)</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="form-section">
+                    <h4 class="section-title text-purple-400">
+                        <i class="fas fa-tasks"></i>
+                        Ringkasan Pekerjaan
+                    </h4>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label class="form-label">Progres Hari Ini (%) <span class="text-red-400">*</span></label>
+                            <input type="number" id="laporan-progress" min="0" max="100" step="0.1" class="form-control" placeholder="75.5" required>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Tenaga Kerja</label>
+                            <input type="number" id="laporan-tenaga" class="form-control" placeholder="25 orang">
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Catatan Harian</label>
+                        <textarea id="laporan-notes" rows="4" class="form-control" placeholder="Detail pekerjaan hari ini..."></textarea>
+                    </div>
+                </div>
+                
+                <div class="modal-actions">
+                    <button type="button" class="btn btn-secondary" onclick="toggleModal('laporanModal')">
+                        <i class="fas fa-times"></i> Batal                    </button>
+                    <button type="submit" class="btn btn-primary">
+                        <i class="fas fa-save"></i> Simpan Laporan
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- MODAL NOTIFIKASI KENDALA -->
+    <div id="notifModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 class="modal-title">
+                    <i class="fas fa-exclamation-triangle text-orange-400"></i>
+                    Laporkan Kendala
+                </h3>
+                <button class="modal-close" onclick="toggleModal('notifModal')">&times;</button>
+            </div>
+            <form id="notifForm" class="p-6">
+                <div class="form-section">
+                    <h4 class="section-title text-orange-400">
+                        <i class="fas fa-bug"></i>
+                        Detail Kendala
+                    </h4>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label class="form-label">ID Segmen <span class="text-red-400">*</span></label>
+                            <select id="notif-segment" class="form-control" required>
+                                <option value="">Pilih Segmen</option>
+                                <option value="GG-001">GG-001 (Overlay Aspal)</option>
+                                <option value="GG-002">GG-002 (Box Culvert)</option>
+                                <option value="GG-003">GG-003 (Guardrail)</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Tingkat Urgensi</label>
+                            <select id="notif-priority" class="form-control">
+                                <option value="low">Rendah</option>
+                                <option value="medium">Sedang</option>
+                                <option value="high">Tinggi</option>
+                                <option value="critical">Kritis</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="form-section">
+                    <h4 class="section-title text-red-400">
+                        <i class="fas fa-exclamation-circle"></i>
+                        Deskripsi Masalah
+                    </h4>
+                    <div class="form-group">
+                        <label class="form-label">Jenis Kendala <span class="text-red-400">*</span></label>
+                        <select id="notif-type" class="form-control" required>
+                            <option value="">Pilih Jenis</option>
+                            <option value="cuaca">Cuaca Buruk</option>
+                            <option value="alat">Kerusakan Alat</option>
+                            <option value="material">Kekurangan Material</option>
+                            <option value="tenaga">Kekurangan Tenaga Kerja</option>
+                            <option value="lainnya">Lainnya</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Deskripsi Lengkap <span class="text-red-400">*</span></label>
+                        <textarea id="notif-description" rows="5" class="form-control" placeholder="Jelaskan kendala secara detail..." required></textarea>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Estimasi Penyelesaian</label>
+                        <input type="date" id="notif-resolution" class="form-control">
+                    </div>
+                </div>
+                
+                <div class="modal-actions">
+                    <button type="button" class="btn btn-secondary" onclick="toggleModal('notifModal')">
+                        <i class="fas fa-times"></i> Batal
+                    </button>
+                    <button type="submit" class="btn btn-primary">
+                        <i class="fas fa-bell"></i> Laporkan Kendala
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Toast Container -->
+    <div id="toastContainer"></div>
+
+    <script>
+        // Data proyek
+        const dataProyek = [
+            { id: 'GG-001', sta: '0+000 - 1+200', jenis: 'Overlay Aspal', pj: '1.200m', prog: 100, stat: 'done', col: 'green' },
+            { id: 'GG-002', sta: '1+200 - 1+800', jenis: 'Box Culvert', pj: '600m', prog: 85, stat: 'progress', col: 'purple' },
+            { id: 'GG-003', sta: '2+100', jenis: 'Guardrail', pj: '150m', prog: 65, stat: 'pending', col: 'yellow' },
+            { id: 'GG-004', sta: '2+800 - 3+500', jenis: 'Patchwork', pj: '700m', prog: 100, stat: 'done', col: 'green' },
+            { id: 'GG-005', sta: '3+500 - 4+200', jenis: 'Aspal AC-Base', pj: '700m', prog: 78, stat: 'progress', col: 'purple' },
+            { id: 'GG-006', sta: '4+200 - 4+850', jenis: 'Trotoar', pj: '650m', prog: 42, stat: 'pending', col: 'yellow' },
+            { id: 'GG-007', sta: '0+500 - 0+800', jenis: 'Stabilisasi Tanah', pj: '300m', prog: 100, stat: 'done', col: 'green' },
+            { id: 'GG-008', sta: 'Persimpangan', jenis: 'Marka Jalan', pj: '100m', prog: 25, stat: 'delayed', col: 'red' }
+        ];
+
+        // Initialize
+        window.addEventListener('load', () => {
+            document.body.classList.add('loaded');
+            setTimeout(() => {
+                document.querySelectorAll('.stat-card').forEach((card, index) => {
+                    setTimeout(() => card.classList.add('animate'), index * 150);
+                });
+            }, 300);
+            renderTable(1);
+        });
+
+        function renderTable(page) {
+            const tbody = document.getElementById('table-body');
+            const showText = document.getElementById('showing-text');
+            tbody.innerHTML = '';
+            
+            const perPage = 4;
+            const start = (page - 1) * perPage;
+            const pageData = dataProyek.slice(start, start + perPage);
+
+            const statusMap = {
+                done: 'Selesai',
+                progress: 'Proses',
+                pending: 'Tertunda',
+                delayed: 'Delayed'
+            };
+
+            const colorMap = {
+                green: 'text-green-400',
+                purple: 'text-purple-400',
+                yellow: 'text-yellow-400',
+                red: 'text-red-400'
+            };
+
+            pageData.forEach(item => {
+                const colorClass = colorMap[item.col] || 'text-gray-400';
+                tbody.innerHTML += `
+                    <tr class="group hover:bg-gray-800/30 transition-all">
+                        <td class="font-mono font-bold text-blue-400">${item.id}</td>
+                        <td>STA ${item.sta}</td>
+                        <td>${item.jenis}</td>
+                        <td class="${colorClass} font-bold">${item.pj}</td>
+                        <td>
+                            <div class="flex items-center">
+                                <div class="progress-bar">
+                                    <div class="progress-fill bg-${item.col}-500 animate" style="width: ${item.prog}%"></div>
+                                </div>
+                                <span class="ml-2 text-sm text-gray-400">${item.prog}%</span>
+                            </div>
+                        </td>
+                        <td><span class="status-badge status-${item.stat}">${statusMap[item.stat]}</span></td>
+                        <td class="text-center">
+                            <button class="text-blue-400 hover:text-white p-2 rounded-lg hover:bg-blue-500/20 transition-all group-hover:scale-110" title="Lihat Detail">
+                                <i class="fas fa-eye"></i>
+                            </button>
+                        </td>
+                    </tr>`;
+            });
+
+            showText.innerText = `Menampilkan ${start + 1} - ${Math.min(start + pageData.length, dataProyek.length)} dari ${dataProyek.length} segmen`;
+            
+            document.querySelectorAll('.page-btn').forEach((btn, i) => {
+                btn.className = (i+1 === page) ? 
+                    "page-btn active" : 
+                    "page-btn";
+            });
+        }
+
+        // Modal Functions
+        function toggleModal(modalId) {
+            const modal = document.getElementById(modalId);
+            if (modal) {
+                modal.classList.toggle('show');
+            }
+        }
+
+        // File Upload
+        document.addEventListener('DOMContentLoaded', function() {
+            const photoInput = document.getElementById('photoInput');
+            if (photoInput) {
+                photoInput.addEventListener('change', function(e) {
+                    const preview = document.getElementById('imagePreview');
+                    if (preview) {
+                        preview.innerHTML = '';
+                        preview.classList.remove('hidden');
+                        
+                        Array.from(e.target.files).forEach((file) => {
+                            if (file.type.startsWith('image/')) {
+                                const reader = new FileReader();
+                                reader.onload = function(e) {
+                                    const img = document.createElement('img');
+                                    img.src = e.target.result;
+                                    img.className = 'image-preview';
+                                    img.alt = file.name;
+                                    preview.appendChild(img);
+                                };
+                                reader.readAsDataURL(file);
+                            }
+                        });
+                    }
+                });
+            }
+        });
+
+        // Drag & drop
+        document.addEventListener('DOMContentLoaded', function() {
+            const uploadArea = document.querySelector('.file-upload-area');
+            if (uploadArea) {
+                ['dragover', 'dragenter'].forEach(event => {
+                    uploadArea.addEventListener(event, (e) => {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        uploadArea.classList.add('dragover');
+                    });
+                });
+                
+                ['dragleave', 'drop'].forEach(event => {
+                    uploadArea.addEventListener(event, (e) => {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        uploadArea.classList.remove('dragover');
+                        if (event === 'drop') {
+                            const files = e.dataTransfer.files;
+                            const photoInput = document.getElementById('photoInput');
+                            if (photoInput) {
+                                photoInput.files = files;
+                                photoInput.dispatchEvent(new Event('change'));
+                            }
+                        }
+                    });
+                });
+            }
+        });
+
+        // Form submissions
+        document.addEventListener('DOMContentLoaded', function() {
+            const uploadForm = document.getElementById('uploadForm');
+            if (uploadForm) {
+                uploadForm.addEventListener('submit', function(e) {
+                    e.preventDefault();
+                    const fileCount = this.querySelector('#photoInput').files.length;
+                    const segment = this.querySelector('#upload-segment').value;
+                    showToast(`✅ ${fileCount} foto berhasil diunggah untuk ${segment}!`, 'success');
+                    setTimeout(() => {
+                        toggleModal('uploadModal');
+                        this.reset();
+                        const preview = document.getElementById('imagePreview');
+                        if (preview) preview.classList.add('hidden');
+                    }, 1500);
+                });
+            }
+
+            const laporanForm = document.getElementById('laporanForm');
+            if (laporanForm) {
+                laporanForm.addEventListener('submit', function(e) {
+                    e.preventDefault();
+                    const date = this.querySelector('#laporan-date').value;
+                    showToast(`✅ Laporan ${date} berhasil disimpan!`, 'success');
+                    setTimeout(() => {
+                        toggleModal('laporanModal');
+                        this.reset();
+                    }, 1500);
+                });
+            }
+
+            const notifForm = document.getElementById('notifForm');
+            if (notifForm) {
+                notifForm.addEventListener('submit', function(e) {
+                    e.preventDefault();
+                    const segment = this.querySelector('#notif-segment').value;
+                    showToast(`⚠️ Kendala ${segment} berhasil dilaporkan!`, 'warning');
+                    setTimeout(() => {
+                        toggleModal('notifModal');
+                        this.reset();
+                    }, 1500);
+                });
+            }
+        });
+
+        // Export Data
+        function eksporData() {
+            let csvContent = "ID Segmen,Lokasi (STA),Jenis Pekerjaan,Panjang,Progres,Status\n";
+            dataProyek.forEach(row => {
+                csvContent += `"${row.id}","${row.sta}","${row.jenis}","${row.pj}",${row.prog}%,${row.stat}\n`;
+            });
+            const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+            const url = URL.createObjectURL(blob);
+            const link = document.createElement("a");
+            link.setAttribute("href", url);
+            link.setAttribute("download", "Laporan_Proyek_GleGhapui_2025.csv");
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+            URL.revokeObjectURL(url);
+            showToast('📊 Data berhasil diekspor!', 'success');
+        }
+
+        function prosesCetak() {
+            showToast('📄 Menyiapkan dokumen untuk dicetak...', 'info');
+            setTimeout(() => window.print(), 1000);
+        }
+
+        // Mobile Menu
+        function setupMobileMenu() {
+            const hamburger = document.getElementById('hamburger');
+            const navMenu = document.getElementById('navMenu');
+            
+            if (hamburger && navMenu) {
+                hamburger.addEventListener('click', () => {
+                    navMenu.classList.toggle('open');
+                });
+                
+                document.querySelectorAll('.nav-item a').forEach(link => {
+                    link.addEventListener('click', () => {
+                        navMenu.classList.remove('open');
+                    });
+                });
+            }
+        }
+
+        // Toast Notification
+        function showToast(message, type = 'info') {
+            const toastContainer = document.getElementById('toastContainer');
+            if (!toastContainer) return;
+            
+            const toast = document.createElement('div');
+            toast.className = `toast bg-gray-800/90 border ${
+                type === 'success' ? 'border-green-400 text-green-300' :
+                type === 'warning' ? 'border-orange-400 text-orange-300' :
+                'border-blue-400 text-blue-300'
+            }`;
+            toast.innerHTML = `
+                <div class="flex items-center gap-2">
+                    <i class="fas ${type === 'success' ? 'fa-check-circle' : type === 'warning' ? 'fa-exclamation-triangle' : 'fa-info-circle'}"></i>
+                    ${message}
+                </div>
+            `;
+            toastContainer.appendChild(toast);
+            
+            // Animate in
+            requestAnimationFrame(() => toast.classList.add('show'));
+            
+            // Animate out
+            setTimeout(() => {
+                toast.classList.remove('show');
+                setTimeout(() => {
+                    if (toast.parentNode) {
+                        toast.parentNode.removeChild(toast);
+                    }
+                }, 400);
+            }, 4000);
+        }
+
+        // Set default dates & keyboard shortcuts
+        document.addEventListener('DOMContentLoaded', () => {
+            const today = new Date().toISOString().split('T')[0];
+            const uploadDate = document.getElementById('upload-date');
+            const laporanDate = document.getElementById('laporan-date');
+            if (uploadDate) uploadDate.value = today;
+            if (laporanDate) laporanDate.value = today;
+            
+            setupMobileMenu();
+            
+            // Keyboard shortcuts
+            document.addEventListener('keydown', (e) => {
+                if (e.key === 'Escape') {
+                    document.querySelectorAll('.modal.show').forEach(modal => {
+                        toggleModal(modal.id);
+                    });
+                }
+                if (e.key === 'p' && (e.ctrlKey || e.metaKey)) {
+                    e.preventDefault();
+                    prosesCetak();
+                }
+            });
+        });
+
+        // Fungsi untuk membuka dan menutup menu mobile
+const hamburger = document.getElementById('hamburger');
+const navMenu = document.getElementById('navMenu');
+
+hamburger.addEventListener('click', () => {
+    navMenu.classList.toggle('open');
+    
+    // Opsional: Animasi tombol hamburger jadi tanda silang (X)
+    const spans = hamburger.querySelectorAll('span');
+    spans[0].classList.toggle('rotate-45');
+    spans[1].classList.toggle('opacity-0');
+    spans[2].classList.toggle('-rotate-45');
+});
+
+// Tutup menu otomatis jika salah satu link diklik
+document.querySelectorAll('.nav-item a').forEach(link => {
+    link.addEventListener('click', () => {
+        navMenu.classList.remove('open');
+    });
+});
+    </script>
+</body>
+</html>

@@ -1,0 +1,1267 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Settings - RoadFix Pidie</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    
+    <style>
+        :root {
+            --ease-in-out: cubic-bezier(0.25, 0.46, 0.45, 0.94);
+            --ease-out: cubic-bezier(0, 0, 0.2, 1);
+        }
+
+        @media print {
+            nav, button, #toastContainer, .modal { display: none !important; }
+            body { background-color: #ffffff !important; color: #000000 !important; }
+            .card { background-color: #ffffff !important; border: 1px solid #ccc !important; box-shadow: none !important; }
+            main { padding: 0 !important; }
+        }
+
+        * { box-sizing: border-box; }
+        body { 
+            background: linear-gradient(135deg, #0f111a 0%, #1a1a2e 100%);
+            color: #e2e8f0; 
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            line-height: 1.6;
+            margin: 0;
+            min-height: 100vh;
+            opacity: 0;
+            transform: translateY(20px);
+            transition: all 0.8s var(--ease-out);
+        }
+        body.loaded { opacity: 1; transform: translateY(0); }
+        
+        /* Navbar Styles - IDENTIK DENGAN DASHBOARD */
+        .navbar {
+            background: rgba(22, 27, 34, 0.95);
+            backdrop-filter: blur(20px);
+            border-bottom: 1px solid #30363d;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            padding: 0.5rem 1rem;
+        }
+        
+        .nav-container {
+            max-width: 1400px;
+            margin: 0 auto;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .nav-brand {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            font-weight: 800;
+            font-size: 1.25rem;
+            color: #58a6ff;
+            text-decoration: none;
+        }
+        
+        .nav-brand i { font-size: 1.5rem; }
+        
+        .nav-menu {
+            display: flex;
+            list-style: none;
+            margin: 0;
+            padding: 0;
+            gap: 0.25rem;
+        }
+        
+        .nav-item a {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.75rem 1rem;
+            color: #94a3b8;
+            text-decoration: none;
+            border-radius: 0.75rem;
+            font-weight: 500;
+            font-size: 0.875rem;
+            transition: all 0.3s var(--ease-out);
+            white-space: nowrap;
+        }
+        
+        .nav-item a:hover, .nav-item a.active {
+            background: rgba(88, 166, 255, 0.15);
+            color: #58a6ff;
+            transform: translateY(-1px);
+        }
+        
+        .nav-user {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            padding: 0.5rem 1rem;
+            background: rgba(88, 166, 255, 0.1);
+            border: 1px solid rgba(88, 166, 255, 0.2);
+            border-radius: 1rem;
+            font-weight: 600;
+            font-size: 0.875rem;
+        }
+        
+        .hamburger {
+            display: none;
+            flex-direction: column;
+            gap: 4px;
+            cursor: pointer;
+            padding: 0.5rem;
+        }
+        
+        .hamburger span {
+            width: 24px;
+            height: 3px;
+            background: #e2e8f0;
+            border-radius: 3px;
+            transition: all 0.3s ease;
+        }
+        
+        /* Main Content */
+        .main-container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 2rem 1rem;
+        }
+        
+        /* Header Section */
+        .header-section {
+            text-align: center;
+            margin-bottom: 3rem;
+        }
+        
+        .header-title {
+            font-size: clamp(1.75rem, 5vw, 3rem);
+            font-weight: 900;
+            background: linear-gradient(135deg, #58a6ff, #3b82f6, #8b5cf6);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin-bottom: 1rem;
+            line-height: 1.2;
+        }
+        
+        .header-tags {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 0.5rem;
+            margin-top: 1rem;
+        }
+        
+        .tag {
+            background: rgba(88, 166, 255, 0.15);
+            color: #58a6ff;
+            padding: 0.375rem 0.75rem;
+            border-radius: 9999px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            border: 1px solid rgba(88, 166, 255, 0.3);
+            animation: bounce 2s infinite;
+        }
+        
+        .tag:nth-child(2) { animation-delay: 0.2s; }
+        .tag:nth-child(3) { animation-delay: 0.4s; }
+        
+        @keyframes bounce {
+            0%, 20%, 50%, 80%, 100% { transform: translateY(0); }
+            40% { transform: translateY(-10px); }
+            60% { transform: translateY(-5px); }
+        }
+        
+        /* Stats Grid */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 3rem;
+        }
+        
+        .stat-card {
+            background: rgba(28, 33, 40, 0.8);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(48, 54, 61, 0.5);
+            border-radius: 1.5rem;
+            padding: 2rem;
+            transition: all 0.4s var(--ease-out);
+            position: relative;
+            overflow: hidden;
+            transform: translateY(30px);
+            opacity: 0;
+        }
+        
+        .stat-card.animate {
+            transform: translateY(0);
+            opacity: 1;
+        }
+        
+        .stat-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.1), transparent);
+            transition: left 0.6s;
+        }
+        
+        .stat-card:hover::before { left: 100%; }
+        .stat-card:hover {
+            transform: translateY(-8px);
+            box-shadow: 0 25px 50px -12px rgba(0,0,0,0.4);
+            border-color: rgba(88, 166, 255, 0.3);
+        }
+        
+        .stat-icon { 
+            font-size: 2rem; 
+            margin-bottom: 1rem;
+            transition: all 0.5s var(--ease-out);
+        }
+        
+        .stat-card:hover .stat-icon {
+            transform: rotate(12deg) scale(1.1);
+        }
+        
+        .stat-number { 
+            font-size: 2.5rem; 
+            font-weight: 900; 
+            margin-bottom: 0.5rem; 
+        }
+        
+        /* Settings Cards */
+        .settings-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+            gap: 2rem;
+            margin-bottom: 3rem;
+        }
+        
+        .setting-card {
+            background: rgba(28, 33, 40, 0.8);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(48, 54, 61, 0.5);
+            border-radius: 1.5rem;
+            padding: 2.5rem;
+            transition: all 0.4s var(--ease-out);
+            position: relative;
+            overflow: hidden;
+            transform: translateY(30px);
+            opacity: 0;
+        }
+        
+        .setting-card.animate {
+            transform: translateY(0);
+            opacity: 1;
+        }
+        
+        .setting-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.1), transparent);
+            transition: left 0.6s;
+        }
+        
+        .setting-card:hover::before { left: 100%; }
+        .setting-card:hover {
+            transform: translateY(-8px);
+            box-shadow: 0 25px 50px -12px rgba(0,0,0,0.4);
+            border-color: rgba(88, 166, 255, 0.3);
+        }
+        
+        .card-header {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            margin-bottom: 2rem;
+            padding-bottom: 1.5rem;
+            border-bottom: 1px solid rgba(48, 54, 61, 0.5);
+        }
+        
+        .card-icon {
+            width: 60px;
+            height: 60px;
+            border-radius: 1rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+            color: white;
+            transition: all 0.5s var(--ease-out);
+        }
+        
+        .setting-card:hover .card-icon {
+            transform: scale(1.1) rotate(5deg);
+        }
+        
+        .toggle-switch { 
+            position: relative; 
+            width: 56px; 
+            height: 28px; 
+            background: rgba(48, 54, 61, 0.7); 
+            border-radius: 14px; 
+            cursor: pointer;
+            transition: all 0.4s var(--ease-in-out);
+            display: inline-flex;
+            align-items: center;
+            padding: 4px;
+        }
+        
+        .toggle-switch.active {
+            background: linear-gradient(90deg, #58a6ff, #3b82f6);
+            box-shadow: 0 4px 16px rgba(88, 166, 255, 0.3);
+        }
+        
+        .toggle-slider {
+            width: 20px;
+            height: 20px;
+            background: white;
+            border-radius: 50%;
+            transition: all 0.4s var(--ease-out);
+            box-shadow: 0 2px 8px rgba(0,0,0,0.4);
+        }
+        
+        .toggle-switch input:checked + .toggle-slider {
+            transform: translateX(28px);
+        }
+        
+        .form-group {
+            margin-bottom: 1.5rem;
+        }
+        
+        .form-label {
+            display: block;
+            font-weight: 600;
+            margin-bottom: 0.75rem;
+            font-size: 0.875rem;
+            color: #e2e8f0;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        
+        .form-control {
+            width: 100%;
+            padding: 1rem 1.25rem;
+            background: rgba(42, 42, 62, 0.8);
+            border: 1px solid rgba(64, 64, 94, 0.6);
+            border-radius: 1rem;
+            color: #e2e8f0;
+            font-size: 1rem;
+            transition: all 0.3s var(--ease-out);
+            transform: translateY(4px);
+        }
+        
+        .form-control:focus {
+            outline: none;
+            border-color: #58a6ff;
+            box-shadow: 0 0 0 3px rgba(88, 166, 255, 0.1);
+            background: rgba(45, 45, 68, 0.9);
+            transform: translateY(-1px);
+        }
+        
+        /* Status badges */
+        .status-badge {
+            padding: 0.375rem 0.75rem;
+            border-radius: 9999px;
+            font-size: 0.75rem;
+            font-weight: 700;
+            text-transform: uppercase;
+        }
+        
+        .status-active { 
+            background: rgba(88,166,255,0.15); 
+            color: #58a6ff; 
+            border: 1px solid rgba(88,166,255,0.3); 
+        }
+        .status-inactive { 
+            background: rgba(75,85,99,0.15); 
+            color: #9ca3b8; 
+            border: 1px solid rgba(156,163,175,0.3); 
+        }
+        
+        /* Action Buttons */
+        .btn {
+            padding: 0.875rem 1.75rem;
+            border: none;
+            border-radius: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s var(--ease-out);
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-size: 0.875rem;
+            text-decoration: none;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .btn-primary {
+            background: linear-gradient(135deg, #58a6ff, #3b82f6);
+            color: white;
+            box-shadow: 0 4px 15px rgba(88, 166, 255, 0.3);
+        }
+        
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(88, 166, 255, 0.4);
+        }
+        
+        .btn-secondary {
+            background: transparent;
+            color: #94a3b8;
+            border: 1px solid rgba(148, 163, 184, 0.3);
+        }
+        
+        .btn-secondary:hover {
+            background: rgba(88, 166, 255, 0.1);
+            color: #58a6ff;
+            border-color: rgba(88, 166, 255, 0.3);
+        }
+        
+        .btn-danger {
+            background: linear-gradient(135deg, #ef4444, #dc2626);
+            color: white;
+        }
+        
+        /* Quick Actions */
+        .actions-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 1.5rem;
+            margin-top: 3rem;
+        }
+        
+        .action-card {
+            background: rgba(28, 33, 40, 0.8);
+            border: 1px solid rgba(48, 54, 61, 0.5);
+            border-radius: 1.5rem;
+            padding: 2.5rem 2rem;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.4s var(--ease-out);
+            position: relative;
+            overflow: hidden;
+            transform: translateY(30px);
+            opacity: 0;
+        }
+        
+        .action-card.animate {
+            transform: translateY(0);
+            opacity: 1;
+        }
+        
+        .action-card::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background: linear-gradient(135deg, transparent 0%, rgba(88,166,255,0.05) 50%, transparent 100%);
+            opacity: 0;
+            transition: opacity 0.4s ease;
+        }
+        
+        .action-card:hover::before { opacity: 1; }
+        .action-card:hover {
+            transform: translateY(-8px);
+            box-shadow: 0 20px 40px -10px rgba(0,0,0,0.4);
+            border-color: rgba(88, 166, 255, 0.3);
+        }
+        
+        .action-icon {
+            width: 72px;
+            height: 72px;
+            border-radius: 1.25rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.75rem;
+            color: white;
+            margin: 0 auto 1.5rem;
+            transition: all 0.5s var(--ease-out);
+        }
+        
+        .action-card:hover .action-icon {
+            transform: scale(1.1) rotate(5deg);
+        }
+        
+        /* Modal Styles */
+        .modal {
+            position: fixed;
+            inset: 0;
+            background: rgba(0,0,0,0.8);
+            backdrop-filter: blur(20px);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 1rem;
+            opacity: 0;
+            visibility: hidden;
+            transition: all 0.4s var(--ease-out);
+            z-index: 1000;
+        }
+        
+        .modal.show {
+            opacity: 1;
+            visibility: visible;
+        }
+        
+        .modal-content {
+            background: rgba(28, 33, 40, 0.95);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(48, 54, 61, 0.5);
+            border-radius: 1.5rem;
+            max-width: 600px;
+            max-height: 90vh;
+            overflow-y: auto;
+            width: 100%;
+            transform: scale(0.8) translateY(20px);
+            transition: all 0.4s var(--ease-out);
+        }
+        
+        .modal.show .modal-content {
+            transform: scale(1) translateY(0);
+        }
+        
+        .modal-header {
+            padding: 2rem 2rem 1.5rem;
+            border-bottom: 1px solid rgba(48, 54, 61, 0.5);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .modal-title {
+            font-size: 1.5rem;
+            font-weight: 800;
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+        
+        .modal-close {
+            background: none;
+            border: none;
+            font-size: 1.5rem;
+            color: #94a3b8;
+            cursor: pointer;
+            padding: 0.5rem;
+            border-radius: 0.5rem;
+            transition: all 0.3s ease;
+            width: 40px;
+            height: 40px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .modal-close:hover {
+            background: rgba(148, 163, 184, 0.2);
+            color: #e2e8f0;
+            transform: scale(1.2);
+        }
+        
+        .form-row {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 1rem;
+        }
+        
+        .modal-actions {
+            padding: 1.5rem 2rem 2rem;
+            border-top: 1px solid rgba(48, 54, 61, 0.5);
+            display: flex;
+            gap: 1rem;
+        }
+        
+        /* Toast */
+        #toastContainer {
+            position: fixed;
+            bottom: 1.5rem;
+            right: 1.5rem;
+            z-index: 2000;
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+        }
+        
+        .toast {
+            padding: 1rem 1.5rem;
+            border-radius: 1rem;
+            font-weight: 600;
+            max-width: 350px;
+            transform: translateX(400px);
+            transition: all 0.4s var(--ease-out);
+            border: 1px solid;
+        }
+        
+        .toast.show { transform: translateX(0); }
+        
+        /* Flex utilities for buttons */
+        .flex { display: flex; }
+        .flex-wrap { flex-wrap: wrap; }
+        .gap-3 { gap: 0.75rem; }
+        .justify-center { justify-content: center; }
+        .mb-8 { margin-bottom: 2rem; }
+        
+        /* Responsive */
+        @media (max-width: 768px) {
+            .hamburger { display: flex; }
+            .nav-menu {
+                position: fixed;
+                top: 100%;
+                left: 0;
+                right: 0;
+                background: rgba(22, 27, 34, 0.98);
+                backdrop-filter: blur(20px);
+                flex-direction: column;
+                padding: 1rem;
+                border-top: 1px solid rgba(48, 54, 61, 0.5);
+                max-height: 0;
+                overflow: hidden;
+                transition: all 0.4s ease;
+            }
+            
+            .nav-menu.open { max-height: 500px; }
+            
+            .main-container { padding: 1rem 0.5rem; }
+            .settings-grid, .stats-grid, .actions-grid { grid-template-columns: 1fr; }
+        }
+        
+        @media (max-width: 480px) {
+            .main-container { padding: 1rem 0.25rem; }
+            .header-title { font-size: 1.75rem; }
+            .setting-card, .stat-card, .action-card { padding: 1.5rem 1rem; }
+        }
+
+        /* Pengaturan khusus layar HP (Maksimal 768px) */
+@media (max-width: 768px) {
+    .hamburger { 
+        display: flex; /* Munculkan tombol garis tiga */
+    }
+
+    .nav-user {
+        display: none; /* Sembunyikan profil user agar tidak sempit */
+    }
+
+    .nav-menu {
+        position: fixed;
+        top: 60px; /* Jarak dari atas (sesuaikan tinggi navbar) */
+        left: -100%; /* Sembunyikan menu di luar layar kiri */
+        flex-direction: column;
+        background: rgba(22, 27, 34, 0.98);
+        width: 100%;
+        height: calc(100vh - 60px);
+        transition: 0.3s;
+        gap: 0;
+        padding: 1rem;
+        z-index: 99;
+    }
+
+    /* Saat menu dibuka (class 'open' ditambah lewat JS) */
+    .nav-menu.open {
+        left: 0;
+    }
+
+    .nav-item {
+        width: 100%;
+        border-bottom: 1px solid rgba(255,255,255,0.1);
+    }
+
+    .nav-item a {
+        padding: 1.5rem;
+        width: 100%;
+        justify-content: flex-start;
+    }
+}
+    </style>
+</head>
+<body>
+    <!-- Navbar - IDENTIK DENGAN DASHBOARD -->
+    <nav class="navbar">
+        <div class="nav-container">
+            <a href="index.html" class="nav-brand">
+                <i class="fas fa-road"></i>
+                <span>RoadFix<span class="text-blue-400">Pro</span></span>
+            </a>
+            
+            <ul class="nav-menu" id="navMenu">
+                <li class="nav-item">
+                    <a href="index.html">
+                        <i class="fas fa-chart-bar"></i>
+                        Dashboard
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="titik-proyek.html">
+                        <i class="fas fa-map-marked-alt"></i>
+                        Titik Proyek
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="logistik-alat.html">
+                        <i class="fas fa-truck-pickup"></i>
+                        Logistik
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="tim-lapangan.html">
+                        <i class="fas fa-users"></i>
+                        Tim Lapangan
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="analitik.html">
+                        <i class="fas fa-chart-line"></i>
+                        Analitik
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="settings.html" class="active">
+                        <i class="fas fa-cog"></i>
+                        Settings
+                    </a>
+                </li>
+            </ul>
+            
+            <div class="nav-user">
+                <div class="w-8 h-8 bg-gradient-to-r from-blue-500 to-purple-500 rounded-full flex items-center justify-center text-white font-bold text-sm">WZ</div>
+                <span>Project Manager</span>
+            </div>
+            
+            <div class="hamburger" id="hamburger">
+                <span></span>
+                <span></span>
+                <span></span>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <div class="main-container">
+        <!-- Header -->
+        <div class="header-section">
+            <h1 class="header-title">Pengaturan Sistem</h1>
+            <div class="header-tags">
+                <span class="tag">Kelola Akun</span>
+                <span class="tag">Konfigurasi Proyek</span>
+                <span class="tag">Gle Ghapui 2025</span>
+            </div>
+        </div>
+
+        <!-- Action Buttons -->
+        <div class="flex flex-wrap gap-3 justify-center mb-8">
+            <button onclick="backupData()" class="btn btn-secondary">
+                <i class="fas fa-download"></i> Backup Data
+            </button>
+            <button onclick="resetToDefault()" class="btn btn-danger">
+                <i class="fas fa-undo"></i> Reset Default
+            </button>
+            <button onclick="toggleSecretForm()" class="btn btn-secondary">
+                <i class="fas fa-keyboard"></i> Form Rahasia (Ctrl+Shift+S)
+            </button>
+        </div>
+
+        <!-- Stats -->
+        <div class="stats-grid">
+            <div class="stat-card">
+                <div class="stat-icon text-blue-400"><i class="fas fa-user-shield"></i></div>
+                <div class="stat-number text-blue-400">Project Manager</div>
+                <div class="text-sm text-gray-400 uppercase tracking-wide font-medium">Level Akses</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon text-green-400"><i class="fas fa-shield-alt"></i></div>
+                <div class="stat-number text-green-400">Aktif</div>
+                <div class="text-sm text-gray-400 uppercase tracking-wide font-medium">Status Sistem</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon text-purple-400"><i class="fas fa-database"></i></div>
+                <div class="stat-number text-purple-400">3</div>
+                <div class="text-sm text-gray-400 uppercase tracking-wide font-medium">Form Aktif</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon text-orange-400"><i class="fas fa-bell"></i></div>
+                <div class="stat-number text-orange-400">Online</div>
+                <div class="text-sm text-gray-400 uppercase tracking-wide font-medium">Koneksi</div>
+            </div>
+        </div>
+
+        <!-- Settings Forms -->
+        <div class="settings-grid">
+            <!-- Profile Settings -->
+            <div class="setting-card">
+                <div class="card-header">
+                    <div class="action-icon bg-gradient-to-r from-blue-500 to-blue-600">
+                        <i class="fas fa-user-circle"></i>
+                    </div>
+                    <div>
+                        <h3 class="text-2xl font-bold text-white">Informasi Profil</h3>
+                        <p class="text-gray-400">Kelola data akun dan informasi personal</p>
+                    </div>
+                </div>
+                
+                <form id="profileForm">
+                    <div class="form-group">
+                        <label class="form-label">
+                            <i class="fas fa-user text-blue-400"></i>
+                            Nama Lengkap
+                        </label>
+                        <input type="text" name="nama" class="form-control" value="WIZA">
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label class="form-label">
+                                <i class="fas fa-id-card text-green-400"></i>
+                                NIP / ID Karyawan
+                            </label>
+                            <input type="text" name="nip" class="form-control font-mono" value="19850312 201001 1 002">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">
+                                <i class="fas fa-phone text-orange-400"></i>
+                                No. Telepon
+                            </label>
+                            <input type="tel" name="phone" class="form-control" value="+62 822-3824-0627">
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">
+                            <i class="fas fa-envelope text-purple-400"></i>
+                            Email Instansi
+                        </label>
+                        <input type="email" name="email" class="form-control" value="daskiagotik2@gmail.com">
+                    </div>
+                </form>
+            </div>
+
+            <!-- Project Settings -->
+            <div class="setting-card">
+                <div class="card-header">
+                    <div class="action-icon bg-gradient-to-r from-green-500 to-green-600">
+                        <i class="fas fa-project-diagram"></i>
+                    </div>
+                    <div>
+                        <h3 class="text-2xl font-bold text-white">Parameter Proyek</h3>
+                        <p class="text-gray-400">Konfigurasi sistem monitoring dan pelaporan</p>
+                    </div>
+                </div>
+                
+                <form id="projectForm">
+                    <div class="form-group">
+                        <label class="form-label flex items-center justify-between">
+                            Mode Monitoring Real-time
+                            <span class="text-xs text-gray-500">(GPS setiap 5 menit)</span>
+                        </label>
+                        <label class="toggle-switch" data-toggle="monitoring">
+                            <input type="checkbox" name="monitoring" checked class="sr-only peer">
+                            <div class="toggle-slider"></div>
+                        </label>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label flex items-center justify-between">
+                            Laporan Otomatis PUPR
+                            <span class="text-xs text-gray-500">(Jumat 16:00)</span>
+                        </label>
+                        <label class="toggle-switch" data-toggle="laporan">
+                            <input type="checkbox" name="laporan" class="sr-only peer">
+                            <div class="toggle-slider"></div>
+                        </label>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label flex items-center justify-between">
+                            Notifikasi Push
+                            <span class="text-xs text-gray-500">(Kendala kritis)</span>
+                        </label>
+                        <label class="toggle-switch" data-toggle="notifikasi">
+                            <input type="checkbox" name="notifikasi" checked class="sr-only peer">
+                            <div class="toggle-slider"></div>
+                        </label>
+                    </div>
+                    <div class="p-4 bg-gradient-to-r from-orange-500/10 to-red-500/10 border border-orange-500/20 rounded-xl">
+                        <div class="flex items-center gap-3">
+                            <div class="bg-orange-600/20 p-2 rounded-lg">
+                                <i class="fas fa-wifi-slash text-orange-400"></i>
+                            </div>
+                            <div>
+                                <p class="font-bold text-orange-300">Mode Offline</p>
+                                <span class="status-badge status-inactive">Terbatas</span>
+                            </div>
+                        </div>
+                    </div>
+                </form>
+            </div>
+
+            <!-- Security Settings -->
+            <div class="setting-card">
+                <div class="card-header">
+                    <div class="action-icon bg-gradient-to-r from-purple-500 to-purple-600">
+                        <i class="fas fa-shield-alt"></i>
+                    </div>
+                    <div>
+                        <h3 class="text-2xl font-bold text-white">Keamanan & Akses</h3>
+                        <p class="text-gray-400">Kelola hak akses dan autentikasi</p>
+                    </div>
+                </div>
+                
+                <form id="securityForm">
+                    <div class="form-group">
+                        <label class="form-label">Level Akses</label>
+                        <select name="levelAkses" class="form-control">
+                            <option>Administrator Sistem</option>
+                            <option selected>Project Manager</option>
+                            <option>Supervisor Lapangan</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label flex items-center justify-between">
+                            2FA Authentication
+                            <span class="status-badge status-active">Aktif</span>
+                        </label>
+                        <label class="toggle-switch" data-toggle="2fa">
+                            <input type="checkbox" name="2fa" checked class="sr-only peer">
+                            <div class="toggle-slider"></div>
+                        </label>
+                    </div>
+                    <div class="form-group">
+                        <button type="button" onclick="openPasswordModal()" class="w-full btn btn-danger">
+                            <i class="fas fa-key"></i>
+                            Ubah Kata Sandi
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <!-- Quick Actions -->
+        <div class="actions-grid">
+            <div class="action-card" onclick="saveAllSettings()">
+                <div class="action-icon bg-gradient-to-r from-emerald-500 to-emerald-600">
+                    <i class="fas fa-save"></i>
+                </div>
+                <h4 class="font-bold text-xl mb-2">Simpan Semua</h4>
+                <p class="text-gray-400 text-sm">Simpan perubahan ke semua form</p>
+            </div>
+            <div class="action-card" onclick="cancelChanges()">
+                <div class="action-icon bg-gradient-to-r from-gray-500 to-gray-600">
+                    <i class="fas fa-times"></i>
+                </div>
+                <h4 class="font-bold text-xl mb-2">Batal Perubahan</h4>
+                <p class="text-gray-400 text-sm">Kembalikan ke pengaturan awal</p>
+            </div>
+            <div class="action-card" onclick="backupData()">
+                <div class="action-icon bg-gradient-to-r from-blue-500 to-blue-600">
+                    <i class="fas fa-download"></i>
+                </div>
+                <h4 class="font-bold text-xl mb-2">Backup Data</h4>
+                <p class="text-gray-400 text-sm">Download konfigurasi JSON</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Secret Data Entry Modal - Ctrl+Shift+S -->
+    <div id="secretDataModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 class="modal-title">
+                    <i class="fas fa-database text-purple-400"></i>
+                    Form Rahasia Sistem (Ctrl+Shift+S)
+                </h3>
+                <button class="modal-close" onclick="toggleSecretForm()">&times;</button>
+            </div>
+            
+            <form id="secretDataForm" class="p-6">
+                <div class="form-row">
+                    <div class="form-group">
+                        <label class="form-label">Kategori Data</label>
+                        <select name="kategori" class="form-control" required>
+                            <option value="">Pilih Kategori</option>
+                            <option value="profil">Data Profil</option>
+                            <option value="proyek">Parameter Proyek</option>
+                            <option value="keamanan">Keamanan & Akses</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">ID Data</label>
+                        <input type="text" name="dataId" class="form-control font-mono" placeholder="GG-SET-001" required>
+                    </div>
+                </div>
+                
+                <div class="form-group">
+                    <label class="form-label">Konfigurasi JSON</label>
+                    <textarea name="nilai" rows="6" class="form-control font-mono" placeholder='{"status": "active", "value": "example", "timestamp": "2025-01-15"}'></textarea>
+                </div>
+                
+                <div class="modal-actions">
+                    <button type="button" class="btn btn-secondary" onclick="toggleSecretForm()">Batal</button>
+                    <button type="submit" class="btn btn-primary">Simpan Data Rahasia</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Password Modal -->
+    <div id="passwordModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 class="modal-title">
+                    <i class="fas fa-key text-red-400"></i>
+                    Ubah Kata Sandi
+                </h3>
+                <button class="modal-close" onclick="closePasswordModal()">&times;</button>
+            </div>
+            <form id="passwordForm" class="p-6">
+                <div class="form-group">
+                    <label class="form-label">Kata Sandi Lama</label>
+                    <input type="password" name="oldPass" class="form-control" required>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Kata Sandi Baru</label>
+                    <input type="password" name="newPass" class="form-control" required>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Konfirmasi</label>
+                    <input type="password" name="confirmPass" class="form-control" required>
+                </div>
+                <div class="modal-actions">
+                    <button type="button" class="btn btn-secondary" onclick="closePasswordModal()">Batal</button>
+                    <button type="submit" class="btn btn-danger">Ubah Password</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Toast Container -->
+    <div id="toastContainer"></div>
+
+    <script>
+        // Initialize app
+        window.addEventListener('load', () => {
+            document.body.classList.add('loaded');
+            setTimeout(() => {
+                document.querySelectorAll('.stat-card, .setting-card, .action-card').forEach((card, index) => {
+                    setTimeout(() => card.classList.add('animate'), index * 150);
+                });
+            }, 300);
+        });
+
+        document.addEventListener('DOMContentLoaded', function() {
+            setupMobileMenu();
+            setupToggles();
+            setupForms();
+            showToast('⚙️ Pengaturan siap digunakan', 'success');
+        });
+
+        // Toggle functionality
+        function setupToggles() {
+            document.querySelectorAll('.toggle-switch input').forEach(toggle => {
+                toggle.addEventListener('change', function() {
+                    const parent = this.closest('label');
+                    if (this.checked) {
+                        parent.classList.add('active');
+                    } else {
+                        parent.classList.remove('active');
+                    }
+                });
+            });
+        }
+
+        // Form functionality
+        function setupForms() {
+            const forms = ['profileForm', 'projectForm', 'securityForm'];
+            forms.forEach(formId => {
+                const form = document.getElementById(formId);
+                form.addEventListener('input', () => {
+                    showToast('💾 Auto-save draft...', 'info');
+                });
+            });
+        }
+
+        function saveAllSettings() {
+            const forms = ['profileForm', 'projectForm', 'securityForm'];
+            let savedCount = 0;
+            
+            forms.forEach(formId => {
+                const form = document.getElementById(formId);
+                const formData = Object.fromEntries(new FormData(form));
+                console.log(`${formId}:`, formData);
+                savedCount++;
+            });
+            
+            showToast(`✅ ${savedCount} form berhasil disimpan!`, 'success');
+        }
+
+        function cancelChanges() {
+            document.querySelectorAll('form').forEach(form => form.reset());
+            showToast('❌ Perubahan dibatalkan', 'warning');
+        }
+
+        function resetToDefault() {
+            Swal.fire({
+                title: 'Reset ke Default?',
+                text: 'Semua pengaturan akan kembali ke nilai awal',
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#ef4444',
+                cancelButtonColor: '#6b7280',
+                confirmButtonText: 'Reset',
+                cancelButtonText: 'Batal'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    document.querySelectorAll('form').forEach(form => form.reset());
+                    showToast('🔄 Pengaturan dikembalikan ke default', 'warning');
+                }
+            });
+        }
+
+        function backupData() {
+            const backup = {
+                profile: Object.fromEntries(new FormData(document.getElementById('profileForm'))),
+                project: Object.fromEntries(new FormData(document.getElementById('projectForm'))),
+                security: Object.fromEntries(new FormData(document.getElementById('securityForm'))),
+                timestamp: new Date().toISOString()
+            };
+            
+            const blob = new Blob([JSON.stringify(backup, null, 2)], { type: 'application/json' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `roadfix-settings-${new Date().toISOString().split('T')[0]}.json`;
+            a.click();
+            URL.revokeObjectURL(url);
+            showToast('💾 Backup data berhasil diunduh!', 'success');
+        }
+
+        // Modal Functions
+        function toggleSecretForm() {
+            const modal = document.getElementById('secretDataModal');
+            modal.classList.toggle('show');
+        }
+
+        function openPasswordModal() {
+            const modal = document.getElementById('passwordModal');
+            modal.classList.add('show');
+        }
+
+        function closePasswordModal() {
+            const modal = document.getElementById('passwordModal');
+            modal.classList.remove('show');
+        }
+
+        // Form submissions
+        document.getElementById('secretDataForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            const data = Object.fromEntries(new FormData(e.target));
+            console.log('Secret Data Entry:', data);
+            showToast('💾 Data rahasia berhasil disimpan!', 'success');
+            toggleSecretForm();
+            e.target.reset();
+        });
+
+        document.getElementById('passwordForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            const data = Object.fromEntries(new FormData(e.target));
+            if (data.newPass === data.confirmPass) {
+                showToast('🔐 Password berhasil diubah!', 'success');
+                closePasswordModal();
+                e.target.reset();
+            } else {
+                showToast('❌ Password tidak cocok!', 'warning');
+            }
+        });
+
+        // Mobile Menu
+        function setupMobileMenu() {
+            const hamburger = document.getElementById('hamburger');
+            const navMenu = document.getElementById('navMenu');
+            
+            hamburger.addEventListener('click', () => {
+                navMenu.classList.toggle('open');
+            });
+            
+            document.querySelectorAll('.nav-item a').forEach(link => {
+                link.addEventListener('click', () => {
+                    navMenu.classList.remove('open');
+                });
+            });
+        }
+
+        // Toast Function
+        function showToast(message, type = 'info') {
+            const toast = document.createElement('div');
+            toast.className = `toast bg-gray-800/90 border ${
+                type === 'success' ? 'border-green-400 text-green-300' :
+                type === 'warning' ? 'border-orange-400 text-orange-300' :
+                'border-blue-400 text-blue-300'
+            }`;
+            toast.innerHTML = `
+                <div class="flex items-center gap-3">
+                    <i class="fas ${
+                        type === 'success' ? 'fa-check-circle' : 
+                        type === 'warning' ? 'fa-exclamation-triangle' : 'fa-info-circle'
+                    }"></i>
+                    <span>${message}</span>
+                </div>
+            `;
+            document.getElementById('toastContainer').appendChild(toast);
+            
+            setTimeout(() => toast.classList.add('show'), 100);
+            setTimeout(() => {
+                toast.classList.remove('show');
+                setTimeout(() => toast.remove(), 400);
+            }, 4000);
+        }
+
+        // Keyboard Shortcuts
+        document.addEventListener('keydown', (e) => {
+            // Ctrl+Shift+S untuk secret form
+            if (e.ctrlKey && e.shiftKey && e.key === 'S') {
+                e.preventDefault();
+                toggleSecretForm();
+            }
+            // Ctrl+S untuk save
+            if ((e.ctrlKey || e.metaKey) && e.key === 's') {
+                e.preventDefault();
+                saveAllSettings();
+            }
+            // Escape untuk tutup modal
+            if (e.key === 'Escape') {
+                document.querySelectorAll('.modal.show').forEach(modal => {
+                    modal.classList.remove('show');
+                });
+            }
+        });
+
+        // Fungsi untuk membuka dan menutup menu mobile
+const hamburger = document.getElementById('hamburger');
+const navMenu = document.getElementById('navMenu');
+
+if (hamburger && navMenu) {
+    hamburger.addEventListener('click', () => {
+        navMenu.classList.toggle('open');
+        
+        // Opsional: Animasi tombol hamburger jadi tanda silang (X)
+        const spans = hamburger.querySelectorAll('span');
+        spans[0].classList.toggle('rotate-45');
+        spans[1].classList.toggle('opacity-0');
+        spans[2].classList.toggle('-rotate-45');
+    });
+}
+
+// Tutup menu otomatis jika salah satu link diklik
+document.querySelectorAll('.nav-item a').forEach(link => {
+    link.addEventListener('click', () => {
+        navMenu.classList.remove('open');
+    });
+});
+    </script>
+</body>
+</html>
